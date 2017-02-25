@@ -1,0 +1,19 @@
+<div class="row marketing">
+  <div class="col-lg-6">
+    <h4>Crawled: <%= length(@crawled) %></h4>
+    <ul>
+      <%= for url <- @crawled do %>
+        <li><%= url %></li>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="col-lg-6">
+    <h4>Domains: <%= length(@domains) %></h4>
+    <ul>
+      <%= for domains <- @domains do %>
+        <li><%= domains %></li>
+      <% end %>
+    </ul>
+  </div>
+</div>

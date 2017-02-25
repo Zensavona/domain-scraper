@@ -32,6 +32,26 @@ defmodule Scraper.Core do
     end
   end
 
+  def work_on_url(url) do
+    Scraper.Store.Crawled.push(url)
+    case url_to_urls_and_domains(url) do
+      {:ok, urls, domains} ->
+        IO.puts "run/1 found #{length(urls)} urls, #{length(domains)} domains"
+        crawled = Scraper.Store.Crawled.get_list
+        urls
+          |> Enum.reject(fn(url) -> Enum.member?(crawled, url) end)
+          |> Enum.each(&(Task.start(fn -> work_on_url(&1) end)))
+        domains |> Enum.each(fn(d) -> Scraper.Store.DomainsToCheck.push(d) end)
+      {:error, reason} ->
+        IO.puts "error: #{reason}"
+      :closed ->
+        IO.puts "Closed on run/1 with #{url}... wtf"
+      :timeout ->
+        IO.puts "Timed out on #{url}"
+    end
+    IO.puts "#{length(Scraper.Store.Crawled.get_list)} urls crawled, #{length(Scraper.Store.DomainsToCheck.get_list)} external domains found"
+  end
+
   def check_domain(domain) do
     case HTTPoison.get(domain) do
       {:ok, %HTTPoison.Response{status_code: code}} when code == 200 or code == 301 or code == 302 ->
