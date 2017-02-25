@@ -1,0 +1,32 @@
+<h2>Listing crawls</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Seed</th>
+      <th>Urls</th>
+      <th>Finished at</th>
+      <th>Began at</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for crawl <- @crawls do %>
+    <tr>
+      <td><%= crawl.seed %></td>
+      <td><%= crawl.urls %></td>
+      <td><%= crawl.finished_at %></td>
+      <td><%= crawl.began_at %></td>
+
+      <td class="text-right">
+        <%= link "Show", to: crawl_path(@conn, :show, crawl), class: "btn btn-default btn-xs" %>
+        <%= link "Edit", to: crawl_path(@conn, :edit, crawl), class: "btn btn-default btn-xs" %>
+        <%= link "Delete", to: crawl_path(@conn, :delete, crawl), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<%= link "New crawl", to: crawl_path(@conn, :new) %>

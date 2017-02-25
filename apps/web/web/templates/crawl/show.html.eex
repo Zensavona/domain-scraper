@@ -1,0 +1,28 @@
+<h2>Show crawl</h2>
+
+<ul>
+
+  <li>
+    <strong>Seed:</strong>
+    <%= @crawl.seed %>
+  </li>
+
+  <li>
+    <strong>Urls:</strong>
+    <%= @crawl.urls %>
+  </li>
+
+  <li>
+    <strong>Finished at:</strong>
+    <%= @crawl.finished_at %>
+  </li>
+
+  <li>
+    <strong>Began at:</strong>
+    <%= @crawl.began_at %>
+  </li>
+
+</ul>
+
+<%= link "Edit", to: crawl_path(@conn, :edit, @crawl) %>
+<%= link "Back", to: crawl_path(@conn, :index) %>
