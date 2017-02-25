@@ -6,7 +6,7 @@ defmodule Web.PageController do
     try do
       Scraper.Store.Crawled.get_list
     catch
-      :exit, _ -> Scraper.init("https://zen.id.au")
+      :exit, _ -> Scraper.init("http://forum.bodybuilding.com")
     end
 
     crawled = Scraper.Store.Crawled.get_list

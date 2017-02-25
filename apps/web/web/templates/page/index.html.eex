@@ -1,11 +1,6 @@
 <div class="row marketing">
   <div class="col-lg-6">
-    <h4>Crawled: <%= length(@crawled) %></h4>
-    <ul>
-      <%= for url <- @crawled do %>
-        <li><%= url %></li>
-      <% end %>
-    </ul>
+    <h4>Crawled: <%= length(@crawled) %> urls</h4>
   </div>
 
   <div class="col-lg-6">

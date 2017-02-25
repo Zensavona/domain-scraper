@@ -26,7 +26,7 @@ defmodule Scraper.Store.DomainsToCheck do
     {:noreply, updated_crawl_list}
   end
 
-  def handle_call(:pop_tocheckl_list, _from, current_crawl_list) do
+  def handle_call(:pop_to_check_list, _from, current_crawl_list) do
     case current_crawl_list do
       [] ->
         {:reply, {:none}, []}
