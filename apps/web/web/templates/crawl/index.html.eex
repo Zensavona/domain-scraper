@@ -1,12 +1,12 @@
-<h2>Listing crawls</h2>
+<h2>My Crawls</h2>
 
 <table class="table">
   <thead>
     <tr>
       <th>Seed</th>
       <th>Urls</th>
-      <th>Finished at</th>
-      <th>Began at</th>
+      <th>Began</th>
+      <th>Finished</th>
 
       <th></th>
     </tr>
@@ -15,9 +15,9 @@
 <%= for crawl <- @crawls do %>
     <tr>
       <td><%= crawl.seed %></td>
-      <td><%= crawl.urls %></td>
-      <td><%= crawl.finished_at %></td>
+      <td><%= crawl.urls || "In Progress" %></td>
       <td><%= crawl.began_at %></td>
+      <td><%= crawl.finished_at || "In Progress" %></td>
 
       <td class="text-right">
         <%= link "Show", to: crawl_path(@conn, :show, crawl), class: "btn btn-default btn-xs" %>
