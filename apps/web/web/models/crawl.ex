@@ -6,7 +6,7 @@ defmodule Web.Crawl do
     field :urls, :integer
     field :finished_at, Ecto.DateTime
     field :began_at, Ecto.DateTime
-    has_many :domain, Web.Domain
+    has_many :domains, Web.Domain
 
     timestamps()
   end
@@ -17,6 +17,6 @@ defmodule Web.Crawl do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params, [:seed, :urls, :finished_at, :began_at])
-    |> validate_required([:seed, :urls, :finished_at, :began_at])
+    |> validate_required([:seed, :began_at])
   end
 end

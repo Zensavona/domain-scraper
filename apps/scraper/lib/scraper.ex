@@ -3,27 +3,14 @@ defmodule Scraper do
   Documentation for Scraper.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Scraper.hello
-      :world
-
-  """
-
   def init(url) do
-    IO.puts "run/1 with #{url}"
-
-    Scraper.Store.Crawled.start_link
-    Scraper.Store.DomainsToCheck.start_link
-
-    Scraper.Core.work_on_url(url)
+    Scraper.Store.Crawled.start_link(url)
+    Scraper.Store.Domains.start_link(url)
+    Scraper.Core.work_on_url(url, url)
   end
 
   def check_domains do
-    domains = Scraper.Store.DomainsToCheck.get_list
+    domains = Scraper.Store.Domains.get_list
     domains |> Enum.each(&(Task.start(fn -> Scraper.Core.check_domain(&1) end)))
   end
 end

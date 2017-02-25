@@ -12,24 +12,6 @@
   </div>
 
   <div class="form-group">
-    <%= label f, :urls, class: "control-label" %>
-    <%= number_input f, :urls, class: "form-control" %>
-    <%= error_tag f, :urls %>
-  </div>
-
-  <div class="form-group">
-    <%= label f, :finished_at, class: "control-label" %>
-    <%= datetime_select f, :finished_at, class: "form-control" %>
-    <%= error_tag f, :finished_at %>
-  </div>
-
-  <div class="form-group">
-    <%= label f, :began_at, class: "control-label" %>
-    <%= datetime_select f, :began_at, class: "form-control" %>
-    <%= error_tag f, :began_at %>
-  </div>
-
-  <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>
   </div>
 <% end %>

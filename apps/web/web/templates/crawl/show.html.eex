@@ -1,28 +1,24 @@
-<h2>Show crawl</h2>
+<center>
+  <h2>Crawl for <%= @crawl.seed %></h2>
+</center>
 
-<ul>
+<div class="row">
+  <div class="col-md-5">
+    <center>
+      <h4><%= @crawl.urls %> URLS crawled</h4>
+    </center>
+  </div>
+  <div class="col-md-5 col-md-offset-1">
+    <center>
+      <h4><%= length(@crawl.unchecked_domains) + length(@crawl.domains) %> domains found (<%= length @crawl.domains %> checked)</h4>
+    </center>
+    <br />
+    <center>
+      <%= for domain <- @crawl.unchecked_domains do %>
+        <p><%= domain %></p>
+      <% end %>
+    </center>
+  </div>
+</div>
 
-  <li>
-    <strong>Seed:</strong>
-    <%= @crawl.seed %>
-  </li>
-
-  <li>
-    <strong>Urls:</strong>
-    <%= @crawl.urls %>
-  </li>
-
-  <li>
-    <strong>Finished at:</strong>
-    <%= @crawl.finished_at %>
-  </li>
-
-  <li>
-    <strong>Began at:</strong>
-    <%= @crawl.began_at %>
-  </li>
-
-</ul>
-
-<%= link "Edit", to: crawl_path(@conn, :edit, @crawl) %>
 <%= link "Back", to: crawl_path(@conn, :index) %>

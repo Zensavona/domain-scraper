@@ -1,6 +1,5 @@
 defmodule Web.CrawlController do
   use Web.Web, :controller
-
   alias Web.Crawl
 
   def index(conn, _params) do
@@ -14,10 +13,11 @@ defmodule Web.CrawlController do
   end
 
   def create(conn, %{"crawl" => crawl_params}) do
-    changeset = Crawl.changeset(%Crawl{}, crawl_params)
+    changeset = Crawl.changeset(%Crawl{began_at: Ecto.DateTime.utc}, crawl_params)
 
     case Repo.insert(changeset) do
-      {:ok, _crawl} ->
+      {:ok, crawl} ->
+        Scraper.init(crawl.seed)
         conn
         |> put_flash(:info, "Crawl created successfully.")
         |> redirect(to: crawl_path(conn, :index))
@@ -27,7 +27,17 @@ defmodule Web.CrawlController do
   end
 
   def show(conn, %{"id" => id}) do
-    crawl = Repo.get!(Crawl, id)
+    crawl = Repo.get!(Crawl, id) |> Repo.preload(:domains)
+
+    # if the crawl is in progress, get the in mem data
+    case crawl.finished_at do
+      nil ->
+        crawl = Map.put(crawl, :urls, length(Scraper.Store.Crawled.get_list(crawl.seed)))
+        crawl = Map.put(crawl, :unchecked_domains, Scraper.Store.Domains.get_list(crawl.seed))
+      _ ->
+        crawl = Map.put(crawl, :unchecked_domains, [])
+    end
+
     render(conn, "show.html", crawl: crawl)
   end
 
