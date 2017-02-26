@@ -14,6 +14,9 @@
     </center>
     <br />
     <center>
+      <%= for domain <- @crawl.domains do %>
+        <p><%= domain.domain %></p>
+      <% end %>
       <%= for domain <- @crawl.unchecked_domains do %>
         <p><%= domain %></p>
       <% end %>

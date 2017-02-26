@@ -14,7 +14,7 @@ defmodule Web.Domain do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:domain, :status])
+    |> cast(params, [:domain, :status, :crawl_id])
     |> validate_required([:domain, :status])
   end
 end

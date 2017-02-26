@@ -3,14 +3,14 @@ defmodule Scraper do
   Documentation for Scraper.
   """
 
-  def init(url) do
-    Scraper.Store.Crawled.start_link(url)
-    Scraper.Store.Domains.start_link(url)
-    Scraper.Core.work_on_url(url, url)
+  def init(id, url) do
+    Scraper.Store.Crawled.start_link(id)
+    Scraper.Store.Domains.start_link(id)
+    Scraper.Core.work_on_url(id, url)
   end
 
-  def check_domains do
-    domains = Scraper.Store.Domains.get_list
+  def check_domains(id) do
+    domains = Scraper.Store.Domains.get_list(id)
     domains |> Enum.each(&(Task.start(fn -> Scraper.Core.check_domain(&1) end)))
   end
 end

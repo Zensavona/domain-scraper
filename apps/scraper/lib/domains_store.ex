@@ -45,21 +45,21 @@ defmodule Scraper.Store.Domains do
   @doc """
   Starts a new bucket.
   """
-  def start_link(seed_url) do
-    Agent.start_link(fn -> [] end, name: :"#{seed_url}_domains")
+  def start_link(id) do
+    Agent.start_link(fn -> [] end, name: :"#{id}_domains")
   end
 
   @doc """
   Gets a value from the `bucket` by `key`.
   """
-  def get_list(seed_url) do
-    Agent.get(:"#{seed_url}_domains", &(&1))
+  def get_list(id) do
+    Agent.get(:"#{id}_domains", &(&1))
   end
 
   @doc """
   Puts the `value` for the given `key` in the `bucket`.
   """
-  def push(seed_url, value) do
-    Agent.update(:"#{seed_url}_domains", fn(list) -> Enum.uniq([value | list]) end)
+  def push(id, value) do
+    Agent.update(:"#{id}_domains", fn(list) -> Enum.uniq([value | list]) end)
   end
 end

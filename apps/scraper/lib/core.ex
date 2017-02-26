@@ -21,7 +21,7 @@ defmodule Scraper.Core do
         {:ok, [url], []}
       {:ok, %HTTPoison.Response{status_code: 404}} ->
         # don't worry 'bout it
-        IO.puts "Not found :("
+        IO.puts "#{url} Not found :("
         {:ok, [], []}
       {:error, %HTTPoison.Error{reason: reason}} ->
         IO.inspect reason
@@ -32,16 +32,16 @@ defmodule Scraper.Core do
     end
   end
 
-  def work_on_url(seed_url, url) do
-    Scraper.Store.Crawled.push(seed_url, url)
+  def work_on_url(id, url) do
+    Scraper.Store.Crawled.push(id, url)
     case url_to_urls_and_domains(url) do
       {:ok, urls, domains} ->
-        IO.puts "run/1 found #{length(urls)} urls, #{length(domains)} domains"
-        crawled = Scraper.Store.Crawled.get_list(seed_url)
+        # IO.puts "run/1 found #{length(urls)} urls, #{length(domains)} domains"
+        crawled = Scraper.Store.Crawled.get_list(id)
         urls
           |> Enum.reject(fn(url) -> Enum.member?(crawled, url) end)
-          |> Enum.each(&(Task.start(fn -> work_on_url(seed_url, &1) end)))
-        domains |> Enum.each(fn(d) -> Scraper.Store.Domains.push(seed_url, d) end)
+          |> Enum.each(&(Task.start(fn -> work_on_url(id, &1) end)))
+        domains |> Enum.each(fn(d) -> Scraper.Store.Domains.push(id, d) end)
       {:error, reason} ->
         IO.puts "error: #{reason}"
       :closed ->
@@ -49,7 +49,7 @@ defmodule Scraper.Core do
       :timeout ->
         IO.puts "Timed out on #{url}"
     end
-    IO.puts "#{length(Scraper.Store.Crawled.get_list(seed_url))} urls crawled, #{length(Scraper.Store.Domains.get_list(seed_url))} external domains found"
+    # IO.puts "#{length(Scraper.Store.Crawled.get_list(seed_url))} urls crawled, #{length(Scraper.Store.Domains.get_list(seed_url))} external domains found"
   end
 
   def check_domain(domain) do
