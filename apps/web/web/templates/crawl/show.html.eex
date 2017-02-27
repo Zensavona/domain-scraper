@@ -10,16 +10,21 @@
   </div>
   <div class="col-md-5 col-md-offset-1">
     <center>
-      <h4><%= length(@crawl.unchecked_domains) + length(@crawl.domains) %> domains found (<%= length @crawl.domains %> checked)</h4>
+      <h4><%= length(@crawl.domains) %> domains found (<%= length(Enum.reject(@crawl.domains, &(!&1.status))) %> expired)</h4>
     </center>
-    <br />
+  </div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-md-12">
     <center>
-      <%= for domain <- @crawl.domains do %>
-        <p><%= domain.domain %></p>
-      <% end %>
-      <%= for domain <- @crawl.unchecked_domains do %>
-        <p><%= domain %></p>
-      <% end %>
+      <%= if @crawl.finished_at do %>
+        <%= for domain <- @crawl.domains do %>
+        <p style='color: <%= if domain.status == true, do: "green", else: "red" %>'><%= domain.domain %></p>
+        <% end %>
+      <%= else %>
+        <h3>Crawling...</h3>
+      <%= end %>
     </center>
   </div>
 </div>

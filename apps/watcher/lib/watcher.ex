@@ -30,7 +30,10 @@ defmodule Watcher do
             crawl = Repo.get!(Crawl, id)
             # insert the domains
             domains = Scraper.Store.Domains.get_list(to_string(id))
-            Enum.each(domains, &(Repo.insert!(Domain.changeset(%Domain{}, %{domain: &1, status: false, crawl_id: crawl.id}))))
+            Enum.each(domains, fn(d) ->
+              {domain, status} = d
+              Repo.insert!(Domain.changeset(%Domain{}, %{domain: domain, status: status, crawl_id: crawl.id}))
+            end)
 
             # update the crawl with a finished datetime
             crawl |> Crawl.changeset(%{finished_at: Ecto.DateTime.utc, urls: Enum.at(urls, 0)}) |> Repo.update!

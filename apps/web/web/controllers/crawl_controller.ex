@@ -1,6 +1,7 @@
 defmodule Web.CrawlController do
   use Web.Web, :controller
   alias Web.Crawl
+  alias Web.Domain
 
   def index(conn, _params) do
     crawls = Repo.all(Crawl)
@@ -27,15 +28,16 @@ defmodule Web.CrawlController do
   end
 
   def show(conn, %{"id" => id}) do
-    crawl = Repo.get!(Crawl, id) |> Repo.preload(:domains)
-    
+    crawl = Repo.get!(Crawl, id) |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status]))
+
     # if the crawl is in progress, get the in mem data
     case crawl.finished_at do
       nil ->
         crawl = Map.put(crawl, :urls, length(Scraper.Store.Crawled.get_list(crawl.id)))
-        crawl = Map.put(crawl, :unchecked_domains, Scraper.Store.Domains.get_list(crawl.id))
+        domains = Scraper.Store.Domains.get_list(crawl.id) |> Enum.map(fn({domain, status}) -> %Domain{domain: domain, status: status} end)
+        crawl = Map.put(crawl, :domains, domains)
       _ ->
-        crawl = Map.put(crawl, :unchecked_domains, [])
+        :ok
     end
 
     render(conn, "show.html", crawl: crawl)

@@ -41,7 +41,8 @@ defmodule Scraper.Core do
         urls
           |> Enum.reject(fn(url) -> Enum.member?(crawled, url) end)
           |> Enum.each(&(Task.start(fn -> work_on_url(id, &1) end)))
-        domains |> Enum.each(fn(d) -> Scraper.Store.Domains.push(id, d) end)
+        domains
+          |> Enum.each(&(Task.start(fn -> check_domain_and_push_to_store(id, &1) end)))
       {:error, reason} ->
         IO.puts "error: #{reason}"
       :closed ->
@@ -52,18 +53,22 @@ defmodule Scraper.Core do
     # IO.puts "#{length(Scraper.Store.Crawled.get_list(seed_url))} urls crawled, #{length(Scraper.Store.Domains.get_list(seed_url))} external domains found"
   end
 
-  def check_domain(domain) do
-    case HTTPoison.get(domain) do
-      {:ok, %HTTPoison.Response{status_code: code}} when code == 200 or code == 301 or code == 302 ->
-        IO.puts "#{domain} valid :("
-      {:ok, %HTTPoison.Response{status_code: 404}} ->
-        IO.puts "Success! #{domain} 404'd"
-      {:error, %HTTPoison.Error{reason: :nxdomain}} ->
-        IO.puts "nxdomain error for #{domain}"
+  # private
+
+  defp check_domain_and_push_to_store(id, domain) do
+    parsed = Domainatrex.parse(domain)
+    domain = "#{Map.get(parsed, :domain)}.#{Map.get(parsed, :tld)}"
+    case Whois.lookup domain do
+      {:ok, %Whois.Record{created_at: nil}} ->
+        Scraper.Store.Domains.push(id, {domain, true})
+        :ok
+      {:ok, _} ->
+        Scraper.Store.Domains.push(id, {domain, false})
+        :ok
+      {:error, _} ->
+        :error
     end
   end
-
-  # private
 
   defp domain_from_url(url), do: url |> String.split("/") |> Enum.fetch!(2)
   defp remove_double_slashes_from_url(url) do
