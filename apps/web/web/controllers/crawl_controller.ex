@@ -5,6 +5,14 @@ defmodule Web.CrawlController do
 
   def index(conn, _params) do
     crawls = Repo.all(Crawl)
+    crawls = Enum.map(crawls, fn(c) ->
+      c = Map.put(c, :began_at, Timex.from_now(Timex.to_datetime(Ecto.DateTime.to_erl(c.began_at))))
+      if c.finished_at do
+        Map.put(c, :finished_at, Timex.from_now(Timex.to_datetime(Ecto.DateTime.to_erl(c.finished_at))))
+      else
+        c
+      end
+    end)
     render(conn, "index.html", crawls: crawls)
   end
 

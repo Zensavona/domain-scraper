@@ -4,7 +4,7 @@ defmodule Watcher.Store do
   """
   def start_link() do
     # run Watcher.watch every 10 seconds forever
-    :timer.apply_interval(:timer.seconds(10), Watcher, :watch, [])
+    :timer.apply_interval(:timer.seconds(5), Watcher, :watch, [])
     Agent.start_link(fn -> [] end, name: __MODULE__)
   end
 

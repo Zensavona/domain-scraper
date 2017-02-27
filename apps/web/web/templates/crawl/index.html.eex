@@ -20,9 +20,7 @@
       <td><%= crawl.finished_at || "In Progress" %></td>
 
       <td class="text-right">
-        <%= link "Show", to: crawl_path(@conn, :show, crawl), class: "btn btn-default btn-xs" %>
-        <%= link "Edit", to: crawl_path(@conn, :edit, crawl), class: "btn btn-default btn-xs" %>
-        <%= link "Delete", to: crawl_path(@conn, :delete, crawl), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %>
+        <%= link "View", to: crawl_path(@conn, :show, crawl), class: "btn btn-default btn-xs" %>
       </td>
     </tr>
 <% end %>
