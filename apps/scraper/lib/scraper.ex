@@ -4,8 +4,12 @@ defmodule Scraper do
   """
 
   def init(id, url) do
-    Scraper.Store.Crawled.start_link(id)
-    Scraper.Store.Domains.start_link(id)
-    Scraper.Core.work_on_url(id, url)
+    # Scraper.Store.Crawled.start_link(id)
+    # Scraper.Store.Domains.start_link(id)
+    # Scraper.Core.work_on_url(id, url)
+  end
+
+  def start_new_crawl(url) do
+
   end
 end

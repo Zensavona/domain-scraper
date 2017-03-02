@@ -1,4 +1,4 @@
-defmodule Scraper.Store.Crawled do
+defmodule Scraper.Store.ToCrawl do
   @doc """
   Starts a new bucket.
 
@@ -30,7 +30,10 @@ defmodule Scraper.Store.Crawled do
   Puts the `value` for the given `key` in the `bucket`.
   """
   def push(crawl_id, url, retries \\ 0) do
-    list = crawl_id |> get_list |> Enum.map(fn({crawl_id, url, _r}) -> {crawl_id, url} end)
+    to_crawl_list = crawl_id |> get_list |> Enum.map(fn({crawl_id, url, _r}) -> {crawl_id, url} end)
+    crawled_list = crawl_id |> Scraper.Store.Crawled.get_list |> Enum.map(fn({crawl_id, url, _r}) -> {crawl_id, url} end)
+    list = to_crawl_list ++ crawled_list
+    
     if !Enum.member?(list, {crawl_id, url}) do
       Agent.update(__MODULE__, fn(list) -> [{crawl_id, url, retries} | list] end)
     end

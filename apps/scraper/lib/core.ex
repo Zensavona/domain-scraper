@@ -22,13 +22,13 @@ defmodule Scraper.Core do
       {:ok, %HTTPoison.Response{status_code: 404}} ->
         # don't worry 'bout it
         IO.puts "#{url} Not found :("
-        {:ok, [], []}
+        {:error, url}
       {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect reason
+        {:error, url}
       {:closed, _} ->
-        {:error, "closed on #{url}"}
+        {:error, url}
       :closed ->
-        {:error, "closed on #{url}"}
+        {:error, url}
     end
   end
 
