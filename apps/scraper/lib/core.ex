@@ -4,7 +4,7 @@ defmodule Scraper.Core do
   def url_to_urls_and_domains(url) do
     domain = url |> domain_from_url
     case HTTPoison.get(url) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} when body !== "" ->
         links = Floki.find(body, "a") |> Floki.attribute("href") |> normalise_urls("http://#{domain}")
 
         urls = links
@@ -23,11 +23,13 @@ defmodule Scraper.Core do
         {:error, url}
       {:ok, %HTTPoison.Response{status_code: 400}} ->
         {:error, url}
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, %HTTPoison.Error{reason: _reason}} ->
         {:error, url}
       {:closed, _} ->
         {:error, url}
       :closed ->
+        {:error, url}
+      _ ->
         {:error, url}
     end
   end

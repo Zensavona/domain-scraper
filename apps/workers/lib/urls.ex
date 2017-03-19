@@ -32,7 +32,7 @@ defmodule Workers.Urls do
       {crawl_id, url, retries} when retries > 4 ->
         insert(crawl_id, url)
       {crawl_id, url, retries} ->
-        IO.puts "[Domains] found a url to crawl: #{url}"
+        IO.puts "[Urls] found a url to crawl: #{url}"
         case Scraper.Core.url_to_urls_and_domains(url) do
           {:error, url} ->
             Store.ToCrawl.push(crawl_id, url, retries + 1)
@@ -74,7 +74,6 @@ defmodule Workers.Urls do
   end
 
   defp insert(crawl_id, url) do
-    IO.puts "CRAWL ID: #{crawl_id}"
     case Repo.insert(Url.changeset(%Url{}, %{url: url, crawl_id: crawl_id})) do
       {:ok, _} ->
         IO.puts "[Urls] Inserted #{url}"
