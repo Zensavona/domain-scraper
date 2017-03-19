@@ -1,7 +1,7 @@
 <center>
   <h2>Crawl for <%= @crawl.seed %></h2>
   <%= if @crawl.finished_at do %>
-    completed in <%= @crawl.time_taken %> sec
+    completed in <%= @crawl.time_taken %> <%= if @crawl.time_taken > 60, do: "min", else: "sec" %>
   <% end %>
 </center>
 

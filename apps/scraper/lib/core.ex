@@ -4,15 +4,24 @@ defmodule Scraper.Core do
   def url_to_urls_and_domains(url) do
     domain = url |> domain_from_url
     case HTTPoison.get(url) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} when body !== "" ->
-        links = Floki.find(body, "a") |> Floki.attribute("href") |> normalise_urls("http://#{domain}")
-
-        urls = links
-          |> Enum.reject(fn(l) -> domain_from_url(l) !== domain end)
-          |> Enum.reject(fn(l) -> l == url end)
-        domains = links |> Enum.reject(fn(l) -> domain_from_url(l) == domain end) |> Enum.map(&domain_from_url(&1))
-
-        {:ok, urls, domains}
+      {:ok, %HTTPoison.Response{status_code: 200, body: body, headers: headers}} ->
+        headers = headers |> Map.new
+        if Map.get(headers, "Content-Type") do
+          content_type = Map.get(headers, "Content-Type")
+          case String.contains?(content_type, "html") do
+            true ->
+              links = Floki.find(body, "a") |> Floki.attribute("href") |> normalise_urls("http://#{domain}")
+              urls = links
+                |> Enum.reject(fn(l) -> domain_from_url(l) !== domain end)
+                |> Enum.reject(fn(l) -> l == url end)
+              domains = links |> Enum.reject(fn(l) -> domain_from_url(l) == domain end) |> Enum.map(&domain_from_url(&1))
+              {:ok, urls, domains}
+            _ ->
+              {:error, url}
+          end
+        else
+          {:error, url}
+        end
       {:ok, %HTTPoison.Response{status_code: 301, headers: headers}} ->
         url = headers |> Enum.into(%{}) |> Map.get("Location")
         {:ok, [url], []}

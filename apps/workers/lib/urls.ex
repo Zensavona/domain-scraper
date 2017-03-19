@@ -38,11 +38,13 @@ defmodule Workers.Urls do
             Store.ToCrawl.push(crawl_id, url, retries + 1)
           {:ok, urls, domains} ->
             insert(crawl_id, url)
-            urls |> Enum.each(&(Task.start(fn -> Store.ToCrawl.push(crawl_id, &1) end)))
-            domains |> Enum.each(&(Task.start(fn -> Store.Domains.push(crawl_id, &1) end)))
+            urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
+            domains |> Enum.each(&(Store.Domains.push(crawl_id, &1)))
+          other ->
+            IO.puts "[Url] Something fucked up..."
+            IO.inspect other
         end
         update(id, {:busy, url})
-        :timer.sleep(100)
     end
     worker(id)
   end

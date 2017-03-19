@@ -29,6 +29,7 @@ defmodule Workers.Domains do
         :timer.sleep(1000)
       {crawl_id, domain, retries} when retries > 4 ->
         IO.puts "[Domains] Errored out after 5 retries on #{domain}"
+        insert(crawl_id, domain, false)
       {crawl_id, domain, retries} ->
         IO.puts "[Domains] found a domain to check: #{domain}"
         case Scraper.Core.check_domain(domain) do

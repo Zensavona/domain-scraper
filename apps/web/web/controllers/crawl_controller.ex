@@ -13,7 +13,13 @@ defmodule Web.CrawlController do
         c
       end
     end)
-    render(conn, "index.html", crawls: crawls)
+
+    stats = %{
+      urls: Store.ToCrawl.get_list,
+      domains: Store.Domains.get_list
+    }
+
+    render(conn, "index.html", crawls: crawls, stats: stats)
   end
 
   def new(conn, _params) do
@@ -41,7 +47,7 @@ defmodule Web.CrawlController do
     crawl = if crawl.finished_at do
       began_at = Timex.to_datetime(Ecto.DateTime.to_erl(crawl.began_at))
       finished_at = Timex.to_datetime(Ecto.DateTime.to_erl(crawl.finished_at))
-      
+
       Map.put(crawl, :time_taken, Timex.diff(finished_at, began_at, :seconds))
     else
       crawl
