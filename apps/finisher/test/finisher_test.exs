@@ -1,6 +1,6 @@
-defmodule WatcherTest do
+defmodule FinisherTest do
   use ExUnit.Case
-  doctest Watcher
+  doctest Finisher
 
   test "the truth" do
     assert 1 + 1 == 2

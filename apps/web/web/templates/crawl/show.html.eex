@@ -1,11 +1,14 @@
 <center>
   <h2>Crawl for <%= @crawl.seed %></h2>
+  <%= if @crawl.finished_at do %>
+    completed in <%= @crawl.time_taken %> sec
+  <% end %>
 </center>
 
 <div class="row">
   <div class="col-md-5">
     <center>
-      <h4><%= @crawl.urls %> URLS crawled</h4>
+      <h4><%= length(@crawl.urls) %> URLS crawled</h4>
     </center>
   </div>
   <div class="col-md-5 col-md-offset-1">

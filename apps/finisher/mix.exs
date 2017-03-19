@@ -1,8 +1,8 @@
-defmodule Watcher.Mixfile do
+defmodule Finisher.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :watcher,
+    [app: :finisher,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -20,7 +20,7 @@ defmodule Watcher.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger],
-     mod: {Watcher.Application, []}]
+     mod: {Finisher.Application, []}]
   end
 
   # Dependencies can be Hex packages:

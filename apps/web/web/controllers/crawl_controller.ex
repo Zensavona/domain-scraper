@@ -4,7 +4,7 @@ defmodule Web.CrawlController do
   alias Web.Domain
 
   def index(conn, _params) do
-    crawls = Repo.all(Crawl)
+    crawls = Repo.all(Crawl) |> Repo.preload(:urls)
     crawls = Enum.map(crawls, fn(c) ->
       c = Map.put(c, :began_at, Timex.from_now(Timex.to_datetime(Ecto.DateTime.to_erl(c.began_at))))
       if c.finished_at do
@@ -26,7 +26,7 @@ defmodule Web.CrawlController do
 
     case Repo.insert(changeset) do
       {:ok, crawl} ->
-        Scraper.init(crawl.id, crawl.seed)
+        Scraper.start_new_crawl(crawl.id, crawl.seed)
         conn
         |> put_flash(:info, "Crawl created successfully.")
         |> redirect(to: crawl_path(conn, :index))
@@ -36,16 +36,15 @@ defmodule Web.CrawlController do
   end
 
   def show(conn, %{"id" => id}) do
-    crawl = Repo.get!(Crawl, id) |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status]))
+    crawl = Repo.get!(Crawl, id) |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status])) |> Repo.preload([:urls])
 
-    # if the crawl is in progress, get the in mem data
-    case crawl.finished_at do
-      nil ->
-        crawl = Map.put(crawl, :urls, length(Scraper.Store.Crawled.get_list(crawl.id)))
-        domains = Scraper.Store.Domains.get_list(crawl.id) |> Enum.map(fn({domain, status}) -> %Domain{domain: domain, status: status} end)
-        crawl = Map.put(crawl, :domains, domains)
-      _ ->
-        :ok
+    crawl = if crawl.finished_at do
+      began_at = Timex.to_datetime(Ecto.DateTime.to_erl(crawl.began_at))
+      finished_at = Timex.to_datetime(Ecto.DateTime.to_erl(crawl.finished_at))
+      
+      Map.put(crawl, :time_taken, Timex.diff(finished_at, began_at, :seconds))
+    else
+      crawl
     end
 
     render(conn, "show.html", crawl: crawl)

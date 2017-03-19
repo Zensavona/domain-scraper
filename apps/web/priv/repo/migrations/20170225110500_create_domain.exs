@@ -10,6 +10,7 @@ defmodule Web.Repo.Migrations.CreateDomain do
       timestamps()
     end
     create index(:domains, [:crawl_id])
+    create unique_index(:domains, [:crawl_id, :domain], name: :unique_crawl_id_domain_combination)
 
   end
 end

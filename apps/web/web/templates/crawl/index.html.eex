@@ -15,7 +15,7 @@
 <%= for crawl <- @crawls do %>
     <tr>
       <td><%= crawl.seed %></td>
-      <td><%= crawl.urls || "In Progress" %></td>
+      <td><%= length(crawl.urls) %></td>
       <td><%= crawl.began_at %></td>
       <td><%= crawl.finished_at || "In Progress" %></td>
 

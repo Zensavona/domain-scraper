@@ -14,7 +14,8 @@ defmodule Web.Url do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:url, :response_code])
-    |> validate_required([:url, :response_code])
+    |> cast(params, [:url, :crawl_id])
+    |> validate_required([:url])
+    |> unique_constraint(:url, name: :unique_crawl_id_url_combination)
   end
 end

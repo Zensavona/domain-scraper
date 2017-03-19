@@ -16,5 +16,6 @@ defmodule Web.Domain do
     struct
     |> cast(params, [:domain, :status, :crawl_id])
     |> validate_required([:domain, :status])
+    |> unique_constraint(:domain, name: :unique_crawl_id_domain_combination)
   end
 end

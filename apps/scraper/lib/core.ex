@@ -20,8 +20,8 @@ defmodule Scraper.Core do
         url = headers |> Enum.into(%{}) |> Map.get("Location")
         {:ok, [url], []}
       {:ok, %HTTPoison.Response{status_code: 404}} ->
-        # don't worry 'bout it
-        IO.puts "#{url} Not found :("
+        {:error, url}
+      {:ok, %HTTPoison.Response{status_code: 400}} ->
         {:error, url}
       {:error, %HTTPoison.Error{reason: reason}} ->
         {:error, url}
@@ -32,45 +32,33 @@ defmodule Scraper.Core do
     end
   end
 
-  def work_on_url(id, url) do
-    Scraper.Store.Crawled.push(id, url)
-    case url_to_urls_and_domains(url) do
-      {:ok, urls, domains} ->
-        # IO.puts "run/1 found #{length(urls)} urls, #{length(domains)} domains"
-        crawled = Scraper.Store.Crawled.get_list(id)
-        urls
-          |> Enum.reject(fn(url) -> Enum.member?(crawled, url) end)
-          |> Enum.each(&(Task.start(fn -> work_on_url(id, &1) end)))
-        domains
-          |> Enum.each(&(Task.start(fn -> check_domain_and_push_to_store(id, &1) end)))
-      {:error, reason} ->
-        IO.puts "error: #{reason}"
-      :closed ->
-        IO.puts "Closed on run/1 with #{url}... wtf"
-      :timeout ->
-        IO.puts "Timed out on #{url}"
-    end
-    # IO.puts "#{length(Scraper.Store.Crawled.get_list(seed_url))} urls crawled, #{length(Scraper.Store.Domains.get_list(seed_url))} external domains found"
-  end
-
   # private
 
-  defp check_domain_and_push_to_store(id, domain) do
+  def check_domain(domain) do
     parsed = Domainatrex.parse(domain)
     domain = "#{Map.get(parsed, :domain)}.#{Map.get(parsed, :tld)}"
-    case Whois.lookup domain do
-      {:ok, %Whois.Record{created_at: nil}} ->
-        Scraper.Store.Domains.push(id, {domain, true})
-        :ok
+    case HTTPoison.get(domain) do
       {:ok, _} ->
-        Scraper.Store.Domains.push(id, {domain, false})
-        :ok
-      {:error, _} ->
-        :error
+        :registered
+      {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}} ->
+        case Whois.lookup domain do
+          {:ok, %Whois.Record{created_at: nil}} ->
+            :available
+          {:ok, _} ->
+            :registered
+          {:error, _} ->
+            :error
+        end
+      _ ->
+      :error
     end
   end
 
-  defp domain_from_url(url), do: url |> String.split("/") |> Enum.fetch!(2)
+  defp domain_from_url(url) do
+    host = URI.parse(url).host
+    bits = Domainatrex.parse(host)
+    "#{bits.domain}.#{bits.tld}"
+  end
   defp remove_double_slashes_from_url(url) do
     parts = String.split(url, "//", parts: 2)
     replacement = parts |> Enum.fetch!(1) |> String.replace("//", "/")

@@ -10,6 +10,7 @@ defmodule Web.Repo.Migrations.CreateUrl do
       timestamps()
     end
     create index(:urls, [:crawl_id])
+    create unique_index(:urls, [:crawl_id, :url], name: :unique_crawl_id_url_combination)
 
   end
 end

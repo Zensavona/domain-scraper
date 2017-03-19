@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :watcher, key: :value
+#     config :workers, key: :value
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:watcher, :key)
+#     Application.get_env(:workers, :key)
 #
 # Or configure a 3rd-party app:
 #
