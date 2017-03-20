@@ -8,16 +8,34 @@ defmodule Workers.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    # Define workers and child supervisors to be supervised
-    children = [
-      # Starts a worker by calling: Workers.Worker.start_link(arg1, arg2, arg3)
-      worker(Workers.Urls, []),
-      worker(Workers.Domains, []),
-    ]
+     children = [
+      supervisor(Workers.UrlSupervisor, []),
+      supervisor(Workers.DomainSupervisor, [])
+     ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Workers.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+end
+
+defmodule Workers.UrlSupervisor do
+  def start_link do
+    import Supervisor.Spec, warn: false
+
+    children = 1..50 |> Enum.to_list |> Enum.map(fn (i) -> worker(Task, [&Workers.Url.worker/0], [id: String.to_atom("url_worker_#{i}")]) end)
+
+    opts = [strategy: :one_for_one, name: Workers.UrlSupervisor]
+    Supervisor.start_link(children, opts)
+  end
+end
+
+defmodule Workers.DomainSupervisor do
+  def start_link do
+    import Supervisor.Spec, warn: false
+
+    children = 1..50 |> Enum.to_list |> Enum.map(fn (i) -> worker(Task, [&Workers.Domain.worker/0], [id: String.to_atom("domain_worker_#{i}")]) end)
+
+    opts = [strategy: :one_for_one, name: Workers.DomainSupervisor]
     Supervisor.start_link(children, opts)
   end
 end

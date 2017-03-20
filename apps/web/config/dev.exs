@@ -40,4 +40,4 @@ config :web, Web.Repo,
   password: "",
   database: "web_dev",
   hostname: "localhost",
-  pool_size: 10
+  pool_size: 50

@@ -1,7 +1,11 @@
 <center>
   <h2>Crawl for <%= @crawl.seed %></h2>
   <%= if @crawl.finished_at do %>
-    completed in <%= @crawl.time_taken %> <%= if @crawl.time_taken > 60, do: "min", else: "sec" %>
+    <%= if Map.has_key?(@crawl, :time_taken_sec) do %>
+      completed in <%= @crawl.time_taken_sec %> sec
+    <% else %>
+      completed in <%= @crawl.time_taken_min %> min
+    <% end %>
   <% end %>
 </center>
 
