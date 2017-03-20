@@ -18,7 +18,7 @@ defmodule Finisher do
     Enum.each(crawls, fn(crawl) ->
       queued_actions = Store.ToCrawl.get_list(crawl.id) ++ Store.Domains.get_list(crawl.id)
       if (length(queued_actions) == 0) do
-        case Repo.all(from u in Url, where: u.crawl_id == ^crawl.id) do
+        case Repo.all(from u in Url, where: u.crawl_id == ^crawl.id, order_by: [asc: u.inserted_at]) do
           # none exist, finish it
           [] ->
             finish_crawl(crawl.id, Ecto.DateTime.utc)
