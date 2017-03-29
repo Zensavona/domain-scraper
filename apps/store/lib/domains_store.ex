@@ -1,4 +1,66 @@
 defmodule Store.Domains do
+  @set_name "domains"
+
+  alias Web.Repo
+  alias Web.Domain
+  import Ecto.Query
+
+  def pop do
+    case Store.Redix.command(["SPOP", @set_name]) do
+      {:ok, nil} ->
+        :empty
+      {:ok, entry} ->
+        [crawl_id, domain] = String.split(entry, "|")
+        {crawl_id, domain}
+    end
+  end
+
+  def push(crawl_id, domain) do
+    case Repo.one(from d in Domain, where: d.domain == ^domain and d.crawl_id == ^crawl_id) do
+      nil ->
+        Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{domain}"])
+      _ ->
+        IO.puts "[Domains] Found duplicate: #{domain}"
+    end
+  end
+
+  def list_length do
+    case Store.Redix.command(["SCARD", @set_name]) do
+      {:ok, length} ->
+        length
+    end
+  end
+
+  def list_length(crawl_id) do
+    case Store.Redix.command(["SMEMBERS", @set_name]) do
+      {:ok, nil} ->
+        0
+      {:ok, members} ->
+         members |> Enum.filter(fn(i) -> List.first(String.codepoints(i)) == to_string(crawl_id) end) |> length
+    end
+  end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+defmodule Store.Domainslol do
   use GenServer
 
   alias Web.Repo

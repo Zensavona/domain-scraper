@@ -32,45 +32,9 @@
 <hr />
 
 <p>
-  <strong>To Crawl:</strong> <%= length(@stats.urls) %>
+  <strong>To Crawl:</strong> <%= @stats.urls %>
 </p>
 
 <p>
-  <strong>Domains To Check:</strong> <%= length(@stats.domains) %>
+  <strong>Domains To Check:</strong> <%= @stats.domains %>
 </p>
-
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>URL</th>
-      <th>Retries</th>
-    </tr>
-  </thead>
-  <tbody>
-<%= for {_id, url, retries} <- @stats.urls do %>
-    <tr>
-      <td><%= url %></td>
-      <td><%= retries %></td>
-    </tr>
-<% end %>
-  </tbody>
-</table>
-
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Domain</th>
-      <th>Retries</th>
-    </tr>
-  </thead>
-  <tbody>
-<%= for {_id, url, retries} <- @stats.domains do %>
-    <tr>
-      <td><%= url %></td>
-      <td><%= retries %></td>
-    </tr>
-<% end %>
-  </tbody>
-</table>

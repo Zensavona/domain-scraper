@@ -23,7 +23,7 @@ defmodule Web.Mixfile do
   def application do
     [mod: {Web, []},
      applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :scraper, :timex]]
+                    :phoenix_ecto, :postgrex, :scraper, :timex, :redix]]
   end
 
   # Specifies which paths to compile per environment.

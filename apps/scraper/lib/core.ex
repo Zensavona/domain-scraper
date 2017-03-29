@@ -48,6 +48,7 @@ defmodule Scraper.Core do
   def check_domain(domain) do
     parsed = Domainatrex.parse(domain)
     domain = "#{Map.get(parsed, :domain)}.#{Map.get(parsed, :tld)}"
+    IO.puts "[Core] Checking #{domain}"
     case HTTPoison.get(domain) do
       {:ok, _} ->
         :registered

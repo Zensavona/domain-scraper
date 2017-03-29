@@ -9,15 +9,13 @@ defmodule Workers.Url do
       :empty ->
         # IO.puts "[Urls] none found, waiting..."
         :timer.sleep(1000)
-      {crawl_id, url, retries} when retries >= 3 ->
-        insert(crawl_id, url)
-      {crawl_id, url, retries} ->
+      {crawl_id, url} ->
         IO.puts "[Urls] found a url to crawl: #{url}"
         case Scraper.Core.url_to_urls_and_domains(url) do
           {:error, url} ->
-            Store.ToCrawl.push(crawl_id, url, retries + 1)
+            Store.Crawled.push(crawl_id, url)
           {:ok, urls, domains} ->
-            insert(crawl_id, url)
+            Store.Crawled.push(crawl_id, url)
             urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
             domains |> Enum.each(&(Store.Domains.push(crawl_id, &1)))
           other ->
@@ -28,7 +26,7 @@ defmodule Workers.Url do
     worker()
   end
 
-  defp insert(crawl_id, url) do
+  def insert(crawl_id, url) do
     case Repo.insert(Url.changeset(%Url{}, %{url: url, crawl_id: crawl_id})) do
       {:ok, _} ->
         IO.puts "[Urls] Inserted #{url}"

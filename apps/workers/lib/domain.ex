@@ -9,14 +9,11 @@ defmodule Workers.Domain do
       :empty ->
         # IO.puts "[Domain] none found, waiting..."
         :timer.sleep(1000)
-      {crawl_id, domain, retries} when retries >= 3 ->
-        IO.puts "[Domains] Errored out after 5 retries on #{domain}"
-        insert(crawl_id, domain, false)
-      {crawl_id, domain, retries} ->
+      {crawl_id, domain} ->
         IO.puts "[Domains] found a domain to check: #{domain}"
         case Scraper.Core.check_domain(domain) do
           :error ->
-            Store.Domains.push(crawl_id, domain, retries + 1)
+            insert(crawl_id, domain, false)
           :registered ->
             # status = false, add to database
             insert(crawl_id, domain, false)
@@ -24,7 +21,6 @@ defmodule Workers.Domain do
             # status = true, add to database
             insert(crawl_id, domain, true)
         end
-        :timer.sleep(100)
     end
     worker()
   end

@@ -4,7 +4,6 @@ defmodule Finisher do
   """
   alias Web.Repo
   alias Web.Crawl
-  alias Web.Url
   import Ecto.Query
 
   def start do
@@ -16,26 +15,22 @@ defmodule Finisher do
     # all unfinished crawls created more than 20 seconds ago
     crawls = Repo.all(from c in Crawl, where: is_nil(c.finished_at) and c.began_at < datetime_add(^Ecto.DateTime.utc, -30, "second"))
     Enum.each(crawls, fn(crawl) ->
-      queued_actions = Store.ToCrawl.get_list(crawl.id) ++ Store.Domains.get_list(crawl.id)
-      if (length(queued_actions) == 0) do
-        case Repo.all(from u in Url, where: u.crawl_id == ^crawl.id, order_by: [asc: u.inserted_at]) do
-          # none exist, finish it
-          [] ->
-            finish_crawl(crawl.id, Ecto.DateTime.utc)
-          urls ->
-            ecto_30_sec_ago =
-              Ecto.DateTime.utc
-              |> Ecto.DateTime.to_erl
-              |> :calendar.datetime_to_gregorian_seconds
-              |> Kernel.-(30)
-              |> :calendar.gregorian_seconds_to_datetime
-              |> Ecto.DateTime.from_erl
-            last_date_time = List.last(urls).inserted_at |> Ecto.DateTime.cast!
+      queued_actions = Store.ToCrawl.list_length(crawl.id) + Store.Domains.list_length(crawl.id)
 
-            if (Ecto.DateTime.compare(last_date_time, ecto_30_sec_ago) == :lt) do
-              finish_crawl(crawl.id, last_date_time)
-            end
-        end
+      if (queued_actions == 0) do
+        crawled_urls = Store.Crawled.get_list(crawl.id)
+
+        time_to_end_at =
+          Ecto.DateTime.utc
+          |> Ecto.DateTime.to_erl
+          |> :calendar.datetime_to_gregorian_seconds
+          |> Kernel.-(20)
+          |> :calendar.gregorian_seconds_to_datetime
+          |> Ecto.DateTime.from_erl
+
+        crawled_urls |> Enum.each(fn(i) -> Workers.Url.insert(crawl.id, i) end)
+
+        finish_crawl(crawl.id, time_to_end_at)
       end
     end)
   end
