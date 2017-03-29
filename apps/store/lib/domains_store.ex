@@ -4,28 +4,29 @@ defmodule Store.Domains do
   alias Web.Repo
   alias Web.Domain
   import Ecto.Query
+  require Dogstatsd
 
   def pop do
-    ExStatsD.timing "store.domains.read_time", fn ->
+    DogStatsd.time(:dogstatsd, "store.domains.read_time") do
       case Store.Redix.command(["SPOP", @set_name]) do
         {:ok, nil} ->
           :empty
-          {:ok, entry} ->
-            ExStatsD.gauge(1, "store.domains.read")
-            [crawl_id, domain] = String.split(entry, "|")
-            {crawl_id, domain}
-          end
+        {:ok, entry} ->
+          Dogstatsd.gauge("store.domains.read", 1)
+          [crawl_id, domain] = String.split(entry, "|")
+          {crawl_id, domain}
+      end
     end
   end
 
   def push(crawl_id, domain) do
-    ExStatsD.timing "store.domains.write_time", fn ->
+    DogStatsd.time(:dogstatsd, "store.domains.write_time") do
       case Repo.one(from d in Domain, where: d.domain == ^domain and d.crawl_id == ^crawl_id) do
         nil ->
-          ExStatsD.gauge(1, "store.domains.written")
+          Dogstatsd.histogram("store.domains.written"1)
           Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{domain}"])
           _ ->
-          ExStatsD.gauge(1, "store.domains.duplicate")
+          Dogstatsd.gauge("store.domains.duplicate", 1)
           IO.puts "[Domains] Found duplicate: #{domain}"
         end
     end

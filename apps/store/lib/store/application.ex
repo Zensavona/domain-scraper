@@ -3,10 +3,14 @@ defmodule Store.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  require DogStatsd
   use Application
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
+
+    {:ok, dogstatsd} = DogStatsd.new("localhost", 8125)
+    Process.register dogstatsd, :dogstatsd
 
     # Define workers and child supervisors to be supervised
     children = [
