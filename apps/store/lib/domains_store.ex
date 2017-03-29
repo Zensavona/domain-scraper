@@ -6,21 +6,28 @@ defmodule Store.Domains do
   import Ecto.Query
 
   def pop do
-    case Store.Redix.command(["SPOP", @set_name]) do
-      {:ok, nil} ->
-        :empty
-      {:ok, entry} ->
-        [crawl_id, domain] = String.split(entry, "|")
-        {crawl_id, domain}
+    ExStatsD.timing "store.domains.read_time", fn ->
+      case Store.Redix.command(["SPOP", @set_name]) do
+        {:ok, nil} ->
+          :empty
+          {:ok, entry} ->
+            ExStatsD.gauge(1, "store.domains.read")
+            [crawl_id, domain] = String.split(entry, "|")
+            {crawl_id, domain}
+          end
     end
   end
 
   def push(crawl_id, domain) do
-    case Repo.one(from d in Domain, where: d.domain == ^domain and d.crawl_id == ^crawl_id) do
-      nil ->
-        Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{domain}"])
-      _ ->
-        IO.puts "[Domains] Found duplicate: #{domain}"
+    ExStatsD.timing "store.domains.write_time", fn ->
+      case Repo.one(from d in Domain, where: d.domain == ^domain and d.crawl_id == ^crawl_id) do
+        nil ->
+          ExStatsD.gauge(1, "store.domains.written")
+          Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{domain}"])
+          _ ->
+          ExStatsD.gauge(1, "store.domains.duplicate")
+          IO.puts "[Domains] Found duplicate: #{domain}"
+        end
     end
   end
 

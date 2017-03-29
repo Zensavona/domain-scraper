@@ -21,6 +21,9 @@ defmodule DomainScraper.Mixfile do
   # Dependencies listed here are available only for this project
   # and cannot be accessed from applications inside the apps folder
   defp deps do
-    [{:redix, ">= 0.0.0"}]
+    [
+      {:redix, ">= 0.0.0"},
+      {:ex_statsd, ">= 0.5.1"}
+    ]
   end
 end

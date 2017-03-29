@@ -2,20 +2,27 @@ defmodule Store.ToCrawl do
   @set_name "to_crawl"
 
   def pop do
-    case Store.Redix.command(["SPOP", @set_name]) do
-      {:ok, nil} ->
-        :empty
-      {:ok, entry} ->
-        [crawl_id, url] = String.split(entry, "|")
-        {crawl_id, url}
+    ExStatsD.timing "store.to_crawl.read_time", fn ->
+      case Store.Redix.command(["SPOP", @set_name]) do
+        {:ok, nil} ->
+          :empty
+          {:ok, entry} ->
+            ExStatsD.gauge(1, "store.to_crawl.read")
+            [crawl_id, url] = String.split(entry, "|")
+            {crawl_id, url}
+          end
     end
   end
 
   def push(crawl_id, url) do
-    if !Store.Crawled.exists?(crawl_id, url) do
-      Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{url}"])
-    else
-      IO.puts "[ToCrawl] Found duplicate: #{url}"
+    ExStatsD.timing "store.to_crawl.write_time", fn ->
+      if !Store.Crawled.exists?(crawl_id, url) do
+        ExStatsD.gauge(1, "store.to_crawl.write")
+        Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{url}"])
+      else
+        ExStatsD.gauge(1, "store.to_crawl.duplicate")
+        IO.puts "[ToCrawl] Found duplicate: #{url}"
+      end
     end
   end
 
