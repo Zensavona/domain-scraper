@@ -3,7 +3,7 @@ defmodule Scraper.Core do
 
   def url_to_urls_and_domains(url) do
     domain = url |> domain_from_url
-    case HTTPoison.get(url) do
+    case HTTPoison.get(url, [], hackney: [pool: :first_pool]) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body, headers: headers}} ->
         headers = headers |> Map.new
         if Map.get(headers, "Content-Type") do
@@ -48,8 +48,7 @@ defmodule Scraper.Core do
   def check_domain(domain) do
     parsed = Domainatrex.parse(domain)
     domain = "#{Map.get(parsed, :domain)}.#{Map.get(parsed, :tld)}"
-    IO.puts "[Core] Checking #{domain}"
-    case HTTPoison.get(domain) do
+    case HTTPoison.get(domain, [], hackney: [pool: :first_pool]) do
       {:ok, _} ->
         :registered
       {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}} ->

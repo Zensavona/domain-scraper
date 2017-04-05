@@ -1,37 +1,37 @@
 defmodule Workers.Url do
 
+  require DogStatsd
   alias Web.Repo
   alias Web.Url
 
 
   def worker do
-    case Store.ToCrawl.pop do
-      :empty ->
-        # IO.puts "[Urls] none found, waiting..."
-        :timer.sleep(1000)
-      {crawl_id, url} ->
-        IO.puts "[Urls] found a url to crawl: #{url}"
-        case Scraper.Core.url_to_urls_and_domains(url) do
-          {:error, url} ->
-            Store.Crawled.push(crawl_id, url)
-          {:ok, urls, domains} ->
-            Store.Crawled.push(crawl_id, url)
-            urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
-            domains |> Enum.each(&(Store.Domains.push(crawl_id, &1)))
-          other ->
-            IO.puts "[Url] Something fucked up..."
-            IO.inspect other
-        end
+    DogStatsd.time(:dogstatsd, "worker.url.time") do
+      case Store.ToCrawl.pop do
+        :empty ->
+          # IO.puts "[Urls] none found, waiting..."
+          :timer.sleep(1000)
+        {crawl_id, url} ->
+          IO.puts "[Urls] found a url to crawl: #{url}"
+          case Scraper.Core.url_to_urls_and_domains(url) do
+            {:error, url} ->
+              Store.Crawled.push(crawl_id, url)
+              DogStatsd.increment(:dogstatsd, "worker.url.checked")
+              DogStatsd.increment(:dogstatsd, "worker.url.error")
+            {:ok, urls, domains} ->
+              DogStatsd.increment(:dogstatsd, "worker.url.checked")
+              DogStatsd.increment(:dogstatsd, "worker.url.normal")
+              Store.Crawled.push(crawl_id, url)
+              urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
+              domains |> Enum.each(&(Store.Domains.push(crawl_id, &1)))
+            other ->
+              DogStatsd.increment(:dogstatsd, "worker.url.checked")
+              DogStatsd.increment(:dogstatsd, "worker.url.unknown")
+              IO.puts "[Url] Something fucked up..."
+              IO.inspect other
+          end
+      end
     end
     worker()
-  end
-
-  def insert(crawl_id, url) do
-    case Repo.insert(Url.changeset(%Url{}, %{url: url, crawl_id: crawl_id})) do
-      {:ok, _} ->
-        IO.puts "[Urls] Inserted #{url}"
-      {:error, _} ->
-        IO.puts "[Urls] Error inserting #{url}, probably a duplicate"
-    end
   end
 end

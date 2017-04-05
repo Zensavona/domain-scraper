@@ -3,10 +3,10 @@ defmodule Web.Crawl do
 
   schema "crawls" do
     field :seed, :string
+    field :urls, :integer
     field :finished_at, Ecto.DateTime
     field :began_at, Ecto.DateTime
     has_many :domains, Web.Domain
-    has_many :urls, Web.Url
 
     timestamps()
   end
@@ -16,7 +16,7 @@ defmodule Web.Crawl do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:seed, :finished_at, :began_at])
+    |> cast(params, [:seed, :finished_at, :began_at, :urls])
     |> validate_required([:seed, :began_at])
   end
 end

@@ -9,17 +9,18 @@ defmodule Store.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    {:ok, dogstatsd} = DogStatsd.new("localhost", 8125)
-    Process.register dogstatsd, :dogstatsd
+    # {:ok, dogstatsd} = DogStatsd.new("localhost", 8125)
+    # Process.register dogstatsd, :dogstatsd
 
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: Store.Worker.start_link(arg1, arg2, arg3)
       # worker(Store.ToCrawl, [[]]),
       # worker(Store.Domains, [[]]),
+      worker(DogStatsd, [%{}, [name: :dogstatsd]])
     ]
 
-    pool_size = 10
+    pool_size = 300
     redix_workers = for i <- 0..(pool_size - 1) do
       worker(Redix, [[], [name: :"redix_#{i}"]], id: {Redix, i})
     end

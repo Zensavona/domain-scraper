@@ -22,7 +22,7 @@ defmodule Workers.UrlSupervisor do
   def start_link do
     import Supervisor.Spec, warn: false
 
-    children = 1..25 |> Enum.map(fn (i) -> worker(Task, [&Workers.Url.worker/0], [id: {Workers.Url, i}]) end)
+    children = 1..200 |> Enum.map(fn (i) -> worker(Task, [&Workers.Url.worker/0], [id: {Workers.Url, i}]) end)
 
     opts = [strategy: :one_for_one, name: Workers.UrlSupervisor]
     Supervisor.start_link(children, opts)
@@ -33,7 +33,7 @@ defmodule Workers.DomainSupervisor do
   def start_link do
     import Supervisor.Spec, warn: false
 
-    children = 1..75 |> Enum.map(fn (i) -> worker(Task, [&Workers.Domain.worker/0], [id: {Workers.Domain, i}]) end)
+    children = 1..200 |> Enum.map(fn (i) -> worker(Task, [&Workers.Domain.worker/0], [id: {Workers.Domain, i}]) end)
 
     opts = [strategy: :one_for_one, name: Workers.DomainSupervisor]
     Supervisor.start_link(children, opts)

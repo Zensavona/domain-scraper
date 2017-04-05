@@ -18,7 +18,7 @@ defmodule Finisher do
       queued_actions = Store.ToCrawl.list_length(crawl.id) + Store.Domains.list_length(crawl.id)
 
       if (queued_actions == 0) do
-        crawled_urls = Store.Crawled.get_list(crawl.id)
+        crawled_urls = Store.Crawled.get_list(crawl.id) |> length
 
         time_to_end_at =
           Ecto.DateTime.utc
@@ -28,16 +28,14 @@ defmodule Finisher do
           |> :calendar.gregorian_seconds_to_datetime
           |> Ecto.DateTime.from_erl
 
-        crawled_urls |> Enum.each(fn(i) -> Workers.Url.insert(crawl.id, i) end)
-
-        finish_crawl(crawl.id, time_to_end_at)
+        finish_crawl(crawl.id, time_to_end_at, crawled_urls)
       end
     end)
   end
 
-  defp finish_crawl(crawl_id, time) do
+  defp finish_crawl(crawl_id, time, crawled_urls \\ 0) do
     crawl = Repo.get!(Crawl, crawl_id)
-    changeset = Crawl.changeset(crawl, %{finished_at: time})
+    changeset = Crawl.changeset(crawl, %{finished_at: time, urls: crawled_urls})
     Repo.update!(changeset)
   end
 end

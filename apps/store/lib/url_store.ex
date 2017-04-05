@@ -1,30 +1,28 @@
-defmodule Store.Domains do
-  @set_name "domains"
-
+defmodule Store.ToCrawl do
   require DogStatsd
+  @set_name "to_crawl"
 
   def pop do
-    DogStatsd.time(:dogstatsd, "store.domains.read_time") do
+    DogStatsd.time(:dogstatsd, "store.to_crawl.read_time") do
       case Store.Redix.command(["SPOP", @set_name]) do
         {:ok, nil} ->
           :empty
         {:ok, entry} ->
-          DogStatsd.increment(:dogstatsd, "store.domains.read")
-          [crawl_id, domain] = String.split(entry, "|")
-          {crawl_id, domain}
+          DogStatsd.increment(:dogstatsd, "store.to_crawl.read")
+          [crawl_id, url] = String.split(entry, "|")
+          {crawl_id, url}
       end
     end
   end
 
-  def push(crawl_id, domain) do
-    DogStatsd.time(:dogstatsd, "store.domains.write_time") do
-      case Store.DomainsChecked.exists?(crawl_id, domain) do
-        false ->
-          DogStatsd.increment(:dogstatsd, "store.domains.written")
-          Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{domain}"])
-        _ ->
-        DogStatsd.increment(:dogstatsd, "store.domains.duplicate")
-        IO.puts "[Domains] Found duplicate: #{domain}"
+  def push(crawl_id, url) do
+    DogStatsd.time(:dogstatsd, "store.to_crawl.write_time") do
+      if !Store.Crawled.exists?(crawl_id, url) do
+        DogStatsd.increment(:dogstatsd, "store.to_crawl.write")
+        Store.Redix.command(["SADD", @set_name, "#{crawl_id}|#{url}"])
+      else
+        DogStatsd.increment(:dogstatsd, "store.to_crawl.duplicate")
+        IO.puts "[ToCrawl] Found duplicate: #{url}"
       end
     end
   end
@@ -46,13 +44,13 @@ defmodule Store.Domains do
   end
 end
 
-defmodule Store.DomainsChecked do
-  @set_name "domains_checked"
+defmodule Store.Crawled do
+  @set_name "crawled"
 
   # todo: clear(crawl_id) func
 
-  def exists?(crawl_id, domain) do
-    case Store.Redix.command(["SISMEMBER", "#{@set_name}_#{crawl_id}", "#{domain}"]) do
+  def exists?(crawl_id, url) do
+    case Store.Redix.command(["SISMEMBER", "#{@set_name}_#{crawl_id}", "#{url}"]) do
       {:ok, 1} ->
         true
       {:ok, 0} ->
@@ -60,8 +58,8 @@ defmodule Store.DomainsChecked do
     end
   end
 
-  def push(crawl_id, domain) do
-    Store.Redix.command(["SADD", "#{@set_name}_#{crawl_id}", "#{domain}"])
+  def push(crawl_id, url) do
+    Store.Redix.command(["SADD", "#{@set_name}_#{crawl_id}", "#{url}"])
   end
 
   def list_length(crawl_id) do
