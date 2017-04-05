@@ -3,14 +3,22 @@ defmodule Store.ToCrawl do
   @set_name "to_crawl"
 
   def pop do
-    DogStatsd.time(:dogstatsd, "store.to_crawl.read_time") do
-      case Store.Redix.command(["SPOP", @set_name]) do
-        {:ok, nil} ->
-          :empty
-        {:ok, entry} ->
-          DogStatsd.increment(:dogstatsd, "store.to_crawl.read")
-          [crawl_id, url] = String.split(entry, "|")
-          {crawl_id, url}
+    case Store.Redix.command(["SPOP", @set_name]) do
+      {:ok, nil} ->
+        :empty
+      {:ok, entry} ->
+        DogStatsd.increment(:dogstatsd, "store.to_crawl.read")
+        [crawl_id, url] = String.split(entry, "|")
+        {crawl_id, url}
+    end
+  end
+
+  def push(crawl_id, urls) when is_list(urls) do
+    DogStatsd.time(:dogstatsd, "store.to_crawl.write_time") do
+      commands = urls |> Enum.reject(&Store.Crawled.exists?(crawl_id, &1)) |> Enum.map(fn(url) -> ["SADD", @set_name, "#{crawl_id}|#{url}"] end)
+      if (length(commands) > 0) do
+        DogStatsd.increment(:dogstatsd, "store.to_crawl.write")
+        Store.Redix.pipeline(commands)
       end
     end
   end
