@@ -1,9 +1,6 @@
 defmodule Workers.Url do
 
   require DogStatsd
-  alias Web.Repo
-  alias Web.Url
-
 
   def worker do
     DogStatsd.time(:dogstatsd, "worker.url.time") do
@@ -22,7 +19,10 @@ defmodule Workers.Url do
               DogStatsd.increment(:dogstatsd, "worker.url.checked")
               DogStatsd.increment(:dogstatsd, "worker.url.normal")
               Store.Crawled.push(crawl_id, url)
-              urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
+
+              Store.ToCrawl.push(crawl_id, urls)
+              # urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
+              
               domains |> Enum.each(&(Store.Domains.push(crawl_id, &1)))
             other ->
               DogStatsd.increment(:dogstatsd, "worker.url.checked")
