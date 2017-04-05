@@ -20,7 +20,7 @@ defmodule Store.Application do
       worker(DogStatsd, [%{}, [name: :dogstatsd]])
     ]
 
-    pool_size = 300
+    pool_size = 100
     redix_workers = for i <- 0..(pool_size - 1) do
       worker(Redix, [[], [name: :"redix_#{i}"]], id: {Redix, i})
     end
@@ -35,6 +35,10 @@ end
 defmodule Store.Redix do
   def command(command) do
     Redix.command(:"redix_#{random_index()}", command)
+  end
+
+  def pipeline(commands) do
+     Redix.pipeline(:"redix_#{random_index()}", commands)
   end
 
   defp random_index() do
