@@ -12,12 +12,12 @@
 <div class="row">
   <div class="col-md-5">
     <center>
-      <h4><%= @crawl.urls %> URLS crawled</h4>
+      <h4><%= @crawl.urls %> URLS crawled<%= if !@crawl.finished_at do %> (<%= @crawl.urls_queued %> queued)<%= end %></h4>
     </center>
   </div>
   <div class="col-md-5 col-md-offset-1">
     <center>
-      <h4><%= length(@crawl.domains) %> domains found (<%= length(Enum.reject(@crawl.domains, &(!&1.status))) %> expired)</h4>
+      <h4><%= length(@crawl.domains) %> domains found (<%= length(Enum.reject(@crawl.domains, &(!&1.status))) %> expired)<%= if !@crawl.finished_at do %> (<%= @crawl.domains_queued %> queued)<%= end %></h4>
     </center>
   </div>
 </div>

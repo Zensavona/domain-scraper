@@ -7,12 +7,12 @@ defmodule Workers.Domain do
 
   def worker do
     DogStatsd.time(:dogstatsd, "worker.domain.time") do
-      case Store.Domains.pop do
+      case Scheduler.pop_domain do
         :empty ->
           # IO.puts "[Domain] none found, waiting..."
           :timer.sleep(1000)
         {crawl_id, domain} ->
-          IO.puts "[Domains] found a domain to check: #{domain}"
+          IO.puts "[Domains] found a domain to check: #{domain} (#{crawl_id})"
           case Scraper.Core.check_domain(domain) do
             :error ->
               DogStatsd.increment(:dogstatsd, "worker.domain.checked")

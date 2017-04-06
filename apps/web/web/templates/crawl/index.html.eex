@@ -28,13 +28,3 @@
 </table>
 
 <%= link "New crawl", to: crawl_path(@conn, :new) %>
-
-<hr />
-
-<p>
-  <strong>To Crawl:</strong> <%= @stats.urls %>
-</p>
-
-<p>
-  <strong>Domains To Check:</strong> <%= @stats.domains %>
-</p>

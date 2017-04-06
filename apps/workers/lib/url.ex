@@ -4,12 +4,12 @@ defmodule Workers.Url do
 
   def worker do
     DogStatsd.time(:dogstatsd, "worker.url.time") do
-      case Store.ToCrawl.pop do
+      case Scheduler.pop_url do
         :empty ->
           # IO.puts "[Urls] none found, waiting..."
           :timer.sleep(1000)
         {crawl_id, url} ->
-          IO.puts "[Urls] found a url to crawl: #{url}"
+          IO.puts "[Urls] found a url to crawl: #{url} (#{crawl_id})"
           case Scraper.Core.url_to_urls_and_domains(url) do
             {:error, url} ->
               Store.Crawled.push(crawl_id, url)
@@ -18,17 +18,14 @@ defmodule Workers.Url do
             {:ok, urls, domains} ->
               DogStatsd.increment(:dogstatsd, "worker.url.checked")
               DogStatsd.increment(:dogstatsd, "worker.url.normal")
-              Store.Crawled.push(crawl_id, url)
 
+              Store.Crawled.push(crawl_id, url)
               Store.ToCrawl.push(crawl_id, urls)
-              # urls |> Enum.each(&(Store.ToCrawl.push(crawl_id, &1)))
-              
               domains |> Enum.each(&(Store.Domains.push(crawl_id, &1)))
             other ->
               DogStatsd.increment(:dogstatsd, "worker.url.checked")
               DogStatsd.increment(:dogstatsd, "worker.url.unknown")
-              IO.puts "[Url] Something fucked up..."
-              IO.inspect other
+              IO.puts "[Url] Something fucked up... (#{other})"
           end
       end
     end

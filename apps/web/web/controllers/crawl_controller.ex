@@ -15,8 +15,8 @@ defmodule Web.CrawlController do
     end)
 
     stats = %{
-      urls: Store.ToCrawl.list_length,
-      domains: Store.Domains.list_length
+      urls: 0,
+      domains: 0
     }
 
     render(conn, "index.html", crawls: crawls, stats: stats)
@@ -32,6 +32,7 @@ defmodule Web.CrawlController do
 
     case Repo.insert(changeset) do
       {:ok, crawl} ->
+        Scheduler.add_crawl(crawl.id)
         Scraper.start_new_crawl(crawl.id, crawl.seed)
         conn
         |> put_flash(:info, "Crawl created successfully.")
@@ -55,7 +56,10 @@ defmodule Web.CrawlController do
         Map.put(crawl, :time_taken_min, Timex.diff(finished_at, began_at, :minutes))
       end
     else
-      crawl = Map.put(crawl, :urls, Store.Crawled.list_length(crawl.id))
+      crawl = crawl
+                |> Map.put(:urls, Store.Crawled.list_length(crawl.id))
+                |> Map.put(:urls_queued, Store.ToCrawl.list_length(crawl.id))
+                |> Map.put(:domains_queued, Store.Domains.list_length(crawl.id))
     end
 
 

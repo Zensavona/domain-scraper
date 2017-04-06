@@ -13,7 +13,7 @@ defmodule Finisher do
   def finish do
     IO.puts "[Finisher] Finishing all the things"
     # all unfinished crawls created more than 20 seconds ago
-    crawls = Repo.all(from c in Crawl, where: is_nil(c.finished_at) and c.began_at < datetime_add(^Ecto.DateTime.utc, -30, "second"))
+    crawls = Repo.all(from c in Crawl, where: is_nil(c.finished_at) and c.began_at < datetime_add(^Ecto.DateTime.utc, -60, "second"))
     Enum.each(crawls, fn(crawl) ->
       queued_actions = Store.ToCrawl.list_length(crawl.id) + Store.Domains.list_length(crawl.id)
 
@@ -24,7 +24,7 @@ defmodule Finisher do
           Ecto.DateTime.utc
           |> Ecto.DateTime.to_erl
           |> :calendar.datetime_to_gregorian_seconds
-          |> Kernel.-(20)
+          |> Kernel.-(50)
           |> :calendar.gregorian_seconds_to_datetime
           |> Ecto.DateTime.from_erl
 
@@ -37,5 +37,8 @@ defmodule Finisher do
     crawl = Repo.get!(Crawl, crawl_id)
     changeset = Crawl.changeset(crawl, %{finished_at: time, urls: crawled_urls})
     Repo.update!(changeset)
+    Scheduler.remove_crawl(crawl_id)
+    Store.DomainsChecked.clear(crawl_id)
+    Store.Crawled.clear(crawl_id)
   end
 end
