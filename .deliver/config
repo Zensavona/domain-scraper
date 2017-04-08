@@ -6,7 +6,8 @@ BUILD_USER="elixir_builder"
 BUILD_AT="/home/$BUILD_USER/edeliver/$APP/builds"
 
 # Used by umbrella projects only
-RELEASE_DIR="$BUILD_AT/apps/$APP/rel/$APP"
+# RELEASE_DIR="$BUILD_AT/apps/$APP/rel/$APP"
+RELEASE_DIR="$BUILD_AT/rel/$APP"
 
 STAGING_HOSTS="prod.test"
 STAGING_USER="elixir_deployer"
