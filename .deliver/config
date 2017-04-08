@@ -1,0 +1,29 @@
+# .deliver/config
+
+APP="domain_scraper"
+BUILD_HOST="build.test"
+BUILD_USER="elixir_builder"
+BUILD_AT="/home/$BUILD_USER/edeliver/$APP/builds"
+
+# Used by umbrella projects only
+RELEASE_DIR="$BUILD_AT/apps/$APP/rel/$APP"
+
+STAGING_HOSTS="prod.test"
+STAGING_USER="elixir_deployer"
+
+TEST_AT="/home/elixir_deployer/$APP_staging"
+
+PRODUCTION_HOSTS="prod.test" # deploy / production hosts separated by space # 54.163.178.252
+PRODUCTION_USER="elixir_deployer" # local user at deploy hosts
+
+DELIVER_TO="/home/elixir_deployer/$APP_staging" # deploy directory on production hosts
+
+# For *Phoenix* projects, symlink prod.secret.exs to our tmp source
+pre_erlang_get_and_update_deps() {
+  local _prod_secret_path="/home/elixir_builder/prod.secret.exs"
+  if [ "$TARGET_MIX_ENV" = "prod" ]; then
+    __sync_remote "
+      ln -sfn '$_prod_secret_path' '$BUILD_AT/config/prod.secret.exs'
+    "
+  fi
+}
