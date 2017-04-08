@@ -34,11 +34,11 @@ end
 
 defmodule Store.Redix do
   def command(command) do
-    Redix.command(:"redix_#{random_index()}", command)
+    Redix.command(:"redix_#{random_index()}", command, timeout: :infinity)
   end
 
   def pipeline(commands) do
-     Redix.pipeline(:"redix_#{random_index()}", commands)
+     Redix.pipeline(:"redix_#{random_index()}", commands, timeout: :infinity)
   end
 
   defp random_index() do

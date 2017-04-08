@@ -3,6 +3,15 @@ defmodule Store.Domains do
 
   require DogStatsd
 
+  def exists?(crawl_id, domain) do
+    case Store.Redix.command(["SISMEMBER", "#{@set_name}:#{crawl_id}", domain]) do
+      {:ok, 1} ->
+        true
+      {:ok, 0} ->
+        false
+    end
+  end
+
   def push(crawl_id, domain) do
     case domain do
       nil ->
@@ -11,7 +20,7 @@ defmodule Store.Domains do
         domain = domain |> String.trim
         if (!is_nil(domain) && String.length(domain) >= 4) do
           DogStatsd.time(:dogstatsd, "store.domains.write_time") do
-            case Store.DomainsChecked.exists?(crawl_id, domain) do
+            case Store.DomainsChecked.exists?(crawl_id, domain) && Store.Domains.exists?(crawl_id, domain) do
               false ->
                 DogStatsd.increment(:dogstatsd, "store.domains.written")
                 Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", domain])

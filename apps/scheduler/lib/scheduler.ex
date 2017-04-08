@@ -31,6 +31,9 @@ defmodule Scheduler do
       case crawls_in_progress do
         {:ok, nil} ->
            :empty
+        {:error, :timeout} ->
+          IO.puts "[Scheduler] Redis timeout..."
+          :empty
         {:ok, crawls} ->
           crawls_with_members = crawls
             |> Enum.map(fn(c) -> {c, Store.Redix.command(["SCARD", "to_crawl:#{c}"])} end)
@@ -46,6 +49,9 @@ defmodule Scheduler do
               {:ok, url} ->
                 IO.puts "[Scheduler] Popped Url #{url}"
                 {crawl_id, url}
+              {:error, :timeout} ->
+                IO.puts "[Scheduler] Redis timeout..."
+                :empty
             end
           else
             :empty
@@ -62,6 +68,9 @@ defmodule Scheduler do
       case crawls_in_progress do
         {:ok, nil} ->
            :empty
+        {:error, :timeout} ->
+           IO.puts "[Scheduler] Redis timeout..."
+           :empty
         {:ok, crawls} ->
           crawls_with_members = crawls
             |> Enum.map(fn(c) -> {c, Store.Redix.command(["SCARD", "domains_to_check:#{c}"])} end)
@@ -77,6 +86,9 @@ defmodule Scheduler do
               {:ok, domain} ->
                 IO.puts "[Scheduler] Popped Domain #{domain}"
                 {crawl_id, domain}
+              {:error, :timeout} ->
+                IO.puts "[Scheduler] Redis timeout..."
+                :empty
             end
           else
             :empty

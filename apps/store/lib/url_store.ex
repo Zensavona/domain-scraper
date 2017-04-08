@@ -2,16 +2,12 @@ defmodule Store.ToCrawl do
   require DogStatsd
   @set_name "to_crawl"
 
-  defp pop do
-    DogStatsd.time(:dogstatsd, "store.to_crawl.read_time") do
-      case Store.Redix.command(["SPOP", @set_name]) do
-        {:ok, nil} ->
-          :empty
-        {:ok, entry} ->
-          DogStatsd.increment(:dogstatsd, "store.to_crawl.read")
-          [crawl_id, url] = String.split(entry, "|")
-          {crawl_id, url}
-      end
+  def exists?(crawl_id, url) do
+    case Store.Redix.command(["SISMEMBER", "#{@set_name}:#{crawl_id}", "#{url}"]) do
+      {:ok, 1} ->
+        true
+      {:ok, 0} ->
+        false
     end
   end
 
@@ -31,7 +27,7 @@ defmodule Store.ToCrawl do
 
   def push(crawl_id, url) do
     DogStatsd.time(:dogstatsd, "store.to_crawl.write_time") do
-      if !Store.Crawled.exists?(crawl_id, url) do
+      if !Store.Crawled.exists?(crawl_id, url) && !Store.ToCrawl.exists?(crawl_id, url) do
         DogStatsd.increment(:dogstatsd, "store.to_crawl.write")
         Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", url])
       else
@@ -62,7 +58,7 @@ defmodule Store.Crawled do
   @set_name "crawled"
 
   def clear(crawl_id) do
-     Store.Redix.command(["DEL", "#{@set_name}:#{crawl_id}"])
+     Store.Redix.command(["DEL", "#{@set_name}_#{crawl_id}"])
   end
 
   def exists?(crawl_id, url) do
