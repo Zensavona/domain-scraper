@@ -22,7 +22,7 @@ defmodule Store.Application do
 
     pool_size = 100
     redix_workers = for i <- 0..(pool_size - 1) do
-      worker(Redix, [[], [name: :"redix_#{i}"]], id: {Redix, i})
+      worker(Redix, [[host: Application.get_env(:store, :redis_host), port: Application.get_env(:store, :redis_port)], [name: :"redix_#{i}"]], id: {Redix, i})
     end
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
