@@ -13,12 +13,39 @@ defmodule Web.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :with_session do
+    plug Guardian.Plug.VerifySession
+    plug Guardian.Plug.LoadResource
+    plug Web.CurrentUser
+  end
+
+  pipeline :login_required do
+    plug Guardian.Plug.EnsureAuthenticated, handler: Web.GuardianErrorHandler
+  end
+
+  pipeline :admin_required do
+
+  end
+
+  # guest
   scope "/", Web do
-    pipe_through :browser # Use the default browser stack
+    pipe_through [:browser, :with_session]
 
     get "/", PageController, :index
 
-    resources "/crawls", CrawlController
+    resources "/sessions", SessionController, only: [:new, :create, :delete]
+    resources "/users", UserController, only: [:new, :create]
+
+    # logged in
+    scope "/" do
+      pipe_through [:login_required]
+
+      resources "/users", UserController, only: [:show]
+      resources "/crawls", CrawlController
+      # resources "/users", UserController, only: [:show] do
+      #   resources "/posts", PostController
+      # end
+    end
   end
 
   # Other scopes may use custom stacks.

@@ -6,6 +6,7 @@ defmodule Web.CrawlSet do
     field :finished_at, Ecto.DateTime
     field :began_at, Ecto.DateTime
 
+    belongs_to :user, Web.User
     has_many :crawls, Web.Crawl
 
     timestamps()
@@ -16,8 +17,8 @@ defmodule Web.CrawlSet do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:phrase])
-    |> validate_required([:phrase])
+    |> cast(params, [:phrase, :began_at, :finished_at])
+    |> validate_required([:phrase, :began_at])
     |> cast_assoc(:crawls)
   end
 end

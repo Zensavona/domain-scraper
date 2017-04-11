@@ -6,7 +6,7 @@ defmodule Web.Repo.Migrations.CreateCrawl do
       add :seed, :string
       add :urls, :integer
       add :finished_at, :utc_datetime
-      add :began_at, :utc_datetime
+      add :began_at, :utc_datetime, null: false
 
       timestamps()
     end
