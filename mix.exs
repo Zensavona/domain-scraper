@@ -26,6 +26,7 @@ defmodule DomainScraper.Mixfile do
       {:dogstatsd, "0.0.3"},
       {:distillery, "~> 0.9"},
       {:edeliver, "~> 1.4.0"},
+      {:lmgtfy, path: "../lmgtfy"},
     ]
   end
 end

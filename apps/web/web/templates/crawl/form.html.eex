@@ -12,6 +12,12 @@
   </div>
 
   <div class="form-group">
+    <%= label f, :phrase, class: "control-label" %>
+    <%= text_input f, :phrase, class: "form-control" %>
+    <%= error_tag f, :phrase %>
+  </div>
+
+  <div class="form-group">
     <%= submit "Submit", class: "btn btn-primary" %>
   </div>
 <% end %>

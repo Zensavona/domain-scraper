@@ -6,6 +6,8 @@ defmodule Web.Crawl do
     field :urls, :integer
     field :finished_at, Ecto.DateTime
     field :began_at, Ecto.DateTime
+
+    belongs_to :crawl_set, Web.CrawlSet
     has_many :domains, Web.Domain
 
     timestamps()

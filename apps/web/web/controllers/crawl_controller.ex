@@ -1,10 +1,16 @@
 defmodule Web.CrawlController do
   use Web.Web, :controller
   alias Web.Crawl
+  alias Web.CrawlSet
   alias Web.Domain
 
   def index(conn, _params) do
-    crawls = Repo.all(Crawl)
+    crawls = Repo.all(from c in Crawl, where: is_nil(c.crawl_set_id))
+    crawl_sets = Repo.all(CrawlSet) |> Repo.preload(:crawls) |> Enum.map(fn(crawl_set) ->
+      urls = Enum.reduce(crawl_set.crawls, 0, fn(c, acc) -> acc + if is_nil(c.urls), do: 0, else: c.urls end)
+      crawl_set |> Map.put(:urls, urls) |> Map.put(:seed, crawl_set.phrase)
+    end)
+    crawls = crawls ++ crawl_sets
     crawls = Enum.map(crawls, fn(c) ->
       c = Map.put(c, :began_at, Timex.from_now(Timex.to_datetime(Ecto.DateTime.to_erl(c.began_at))))
       if c.finished_at do
@@ -28,17 +34,37 @@ defmodule Web.CrawlController do
   end
 
   def create(conn, %{"crawl" => crawl_params}) do
-    changeset = Crawl.changeset(%Crawl{began_at: Ecto.DateTime.utc}, crawl_params)
+    case Map.get(crawl_params, "phrase") do
+      "" ->
+        changeset = Crawl.changeset(%Crawl{began_at: Ecto.DateTime.utc}, crawl_params)
+        case Repo.insert(changeset) do
+          {:ok, crawl} ->
+            Scheduler.add_crawl(crawl.id)
+            Scraper.start_new_crawl(crawl.id, crawl.seed)
+            conn
+            |> put_flash(:info, "Crawl created successfully.")
+            |> redirect(to: crawl_path(conn, :index))
+          {:error, changeset} ->
+            render(conn, "new.html", changeset: changeset)
+        end
+      phrase ->
+        seeds = phrase |> Lmgtfy.search |> Enum.uniq_by(fn(i) -> URI.parse(i).host end) |> Enum.take(10)
+        crawls = Enum.map(seeds, fn(s) -> %{began_at: Ecto.DateTime.utc, seed: s} end)
+        changeset = CrawlSet.changeset(%CrawlSet{began_at: Ecto.DateTime.utc}, %{phrase: phrase, crawls: crawls})
+        case Repo.insert(changeset) do
+          {:ok, crawl_set} ->
+            crawl_set = Repo.preload(crawl_set, :crawls)
+            Enum.each(crawl_set.crawls, fn(c) ->
+              Scheduler.add_crawl(c.id)
+              Scraper.start_new_crawl(c.id, c.seed)
+            end)
 
-    case Repo.insert(changeset) do
-      {:ok, crawl} ->
-        Scheduler.add_crawl(crawl.id)
-        Scraper.start_new_crawl(crawl.id, crawl.seed)
-        conn
-        |> put_flash(:info, "Crawl created successfully.")
-        |> redirect(to: crawl_path(conn, :index))
-      {:error, changeset} ->
-        render(conn, "new.html", changeset: changeset)
+            conn
+            |> put_flash(:info, "Crawl Set created successfully.")
+            |> redirect(to: crawl_path(conn, :index))
+          {:error, changeset} ->
+            render(conn, "new.html", changeset: changeset)
+        end
     end
   end
 
