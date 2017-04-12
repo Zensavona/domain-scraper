@@ -1,0 +1,35 @@
+doctype html
+html
+  head
+    title Hello World
+    / link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.10/components/reset.min.css"
+    link rel="stylesheet" href="https://cdn.jsdelivr.net/semantic-ui/2.2.10/semantic.min.css"
+    link rel="stylesheet" href=static_path(@conn,"/css/app.css")
+  body
+    .pusher
+      .ui.vertical.masthead.center.aligned.segment
+        .ui.container
+          .ui.large.secondary.pointing.menu
+            = if @current_user do
+              a.item href="/crawls" Crawls
+            - else
+              a.item href="/" Home
+            .right.menu
+              = if @current_user do
+                = link "Sign out", to: session_path(@conn, :delete, @current_user), method: "delete", class: "ui item"
+              - else
+                = link "Register", to: user_path(@conn, :new), class: "ui item"
+                = link "Sign in", to: session_path(@conn, :new), class: "ui item"
+    .ui.centered.grid.container
+      .row
+        .column
+          - info_flash = get_flash(@conn, :info)
+          - error_flash = get_flash(@conn, :error)
+          = if !is_nil(info_flash) do
+            .ui.info.message = get_flash(@conn, :info)
+          = if !is_nil(error_flash) do
+            .ui.error.message = get_flash(@conn, :error)
+    .main = render @view_module, @view_template, assigns
+    script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"
+    script src="https://cdn.jsdelivr.net/semantic-ui/2.2.10/semantic.min.js"
+    script src=static_path(@conn,"/js/app.js")

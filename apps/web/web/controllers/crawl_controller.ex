@@ -10,11 +10,11 @@ defmodule Web.CrawlController do
   end
 
   def index(conn, _params, current_user) do
-    crawls = current_user |> Crawl.all_for_user_without_crawl_set_members |> Repo.all
+    crawls = current_user |> Crawl.all_for_user_without_crawl_set_members |> Repo.all |> Repo.preload(:domains)
 
-    crawl_sets = Repo.all(CrawlSet) |> Repo.preload(:crawls) |> Enum.map(fn(crawl_set) ->
-      urls = Enum.reduce(crawl_set.crawls, 0, fn(c, acc) -> acc + if is_nil(c.urls), do: 0, else: c.urls end)
-      crawl_set |> Map.put(:urls, urls) |> Map.put(:seed, crawl_set.phrase)
+    crawl_sets = Repo.all(from c in CrawlSet, where: c.user_id == ^current_user.id, preload: [{:crawls, :domains}]) |> Enum.map(fn(crawl_set) ->
+      domains = Enum.reduce(crawl_set.crawls, 0, fn(c, acc) -> acc + length(c.domains) end)
+      crawl_set |> Map.put(:domains, domains) |> Map.put(:seed, crawl_set.phrase)
     end)
 
     crawls = crawls ++ crawl_sets
@@ -109,6 +109,45 @@ defmodule Web.CrawlController do
                     |> Map.put(:urls, Store.Crawled.list_length(crawl.id))
                     |> Map.put(:urls_queued, Store.ToCrawl.list_length(crawl.id))
                     |> Map.put(:domains_queued, Store.Domains.list_length(crawl.id))
+        end
+
+        render(conn, "show.html", crawl: crawl)
+    end
+  end
+
+  def show_crawl_set(conn, %{"id" => id}, current_user) do
+    # crawl = Repo.get!(Crawl, id) |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status]))
+    crawl = current_user |> CrawlSet.by_id_for_user(id) |> Repo.one # |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status]))
+    crawl = Map.put(crawl, :seed, crawl.phrase)
+
+    domains = Enum.map(crawl.crawls, fn(c) -> c.domains end) |> List.flatten
+    urls = Enum.reduce(crawl.crawls, 0, fn(c, acc) -> acc + if is_nil(c.urls), do: 0, else: c.urls end)
+    crawl = Map.put(crawl, :domains, domains)
+    crawl = Map.put(crawl, :urls, urls)
+    crawl = Map.put(crawl, :seeds, Enum.map(crawl.crawls, &(&1.seed)))
+
+    case crawl do
+      nil ->
+        conn
+          |> put_status(:not_found)
+          |> render(Web.ErrorView, "404.html")
+      crawl ->
+        crawl = if crawl.finished_at do
+          began_at = Timex.to_datetime(Ecto.DateTime.to_erl(crawl.began_at))
+          finished_at = Timex.to_datetime(Ecto.DateTime.to_erl(crawl.finished_at))
+          time_taken_secs = Timex.diff(finished_at, began_at, :seconds)
+
+          if (time_taken_secs < 120) do
+            Map.put(crawl, :time_taken_sec, time_taken_secs)
+          else
+            Map.put(crawl, :time_taken_min, Timex.diff(finished_at, began_at, :minutes))
+          end
+        else
+
+          crawl = crawl
+                    |> Map.put(:urls, Enum.reduce(crawl.crawls, 0, fn(c, acc) -> acc + Store.Crawled.list_length(c.id) end))
+                    |> Map.put(:urls_queued, Enum.reduce(crawl.crawls, 0, fn(c, acc) -> acc + Store.ToCrawl.list_length(c.id) end)) #, Store.ToCrawl.list_length(crawl.id))
+                    |> Map.put(:domains_queued, Enum.reduce(crawl.crawls, 0, fn(c, acc) -> acc + Store.Domains.list_length(c.id) end)) #, Store.Domains.list_length(crawl.id))
         end
 
         render(conn, "show.html", crawl: crawl)

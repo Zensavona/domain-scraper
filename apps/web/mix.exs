@@ -45,6 +45,7 @@ defmodule Web.Mixfile do
      {:timex, "~> 3.1"},
      {:comeonin, "~> 3.0"},
      {:guardian, "~> 0.14"},
+     {:phoenix_slime, "~> 0.8.0"},
      {:scraper, in_umbrella: true}]
   end
 

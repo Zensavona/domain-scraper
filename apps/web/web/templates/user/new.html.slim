@@ -1,0 +1,34 @@
+.ui.middle.aligned.center.aligned.grid
+  .four.wide.column
+    br
+    h2.ui.center.aligned.icon.header
+      i.circular.user.icon
+      .content
+        span Create an account
+    = form_for @changeset, user_path(@conn, :create), [class: "ui large form"], fn f ->
+      .ui.stacked.segment
+        .field
+          .ui.left.icon.input
+            i.user.icon
+            = text_input f, :email, placeholder: "Email"
+            = error_tag f, :email
+        .equal.width.fields
+          .field
+            .ui.left.icon.input
+              i.user.icon
+              = text_input f, :first_name, placeholder: "First Name"
+              = error_tag f, :first_name
+          .field
+            .ui.left.icon.input
+              i.user.icon
+              = text_input f, :last_name, placeholder: "Last Name"
+              = error_tag f, :last_name
+        .field
+          .ui.left.icon.input
+            i.lock.icon
+            = password_input f, :password, placeholder: "Password"
+            = error_tag f, :password
+        = submit "Sign Up!", class: "ui fluid large teal submit button"
+    .ui.message
+      span Already have an account?&nbsp;&nbsp;
+      a href="/sessions/new" Log In

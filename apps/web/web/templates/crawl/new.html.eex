@@ -1,6 +1,0 @@
-<h2>New crawl</h2>
-
-<%= render "form.html", changeset: @changeset,
-                        action: crawl_path(@conn, :create) %>
-
-<%= link "Back", to: crawl_path(@conn, :index) %>

@@ -1,0 +1,24 @@
+.ui.centered.grid.container
+  .row
+    .column
+      .equal.width.row
+        .column
+          = link "New crawl", to: crawl_path(@conn, :new), class: "ui right floated button"
+        .column
+          h2 My Crawls
+  .row
+    .column
+      .ui.cards
+        = for crawl <- @crawls do
+          a.ui.card href="#{if is_list(crawl.domains), do: crawl_path(@conn, :show, crawl), else: crawl_path(@conn, :show_crawl_set, crawl)}"
+            .content
+              .header = crawl.seed
+              .meta
+                .right.floated.time
+                  = if is_nil(crawl.finished_at) do
+                    span Kicked off&nbsp;
+                      = crawl.began_at
+                .category
+                  = if !is_nil(crawl.finished_at), do: "Finished #{crawl.finished_at}", else: "In Progress"
+              .description
+                span #{if is_list(crawl.domains), do: length(crawl.domains), else: crawl.domains} Domains Found

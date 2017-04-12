@@ -1,0 +1,53 @@
+.ui.middle.aligned.center.aligned.grid.container
+  .row
+    .column
+      h2.ui.center.aligned.header Crawl for #{@crawl.seed}
+  .row
+    center
+      .ui.small.statistics
+        .statistic
+          .value #{@crawl.urls}
+          .label Urls Crawled
+        = if !@crawl.finished_at do
+          .statistic
+            .value #{@crawl.urls_queued}
+            .label Urls Queued
+        .statistic
+          .value = length(@crawl.domains)
+          .label Domains Found
+        .green.statistic
+          .value = length(Enum.reject(@crawl.domains, &(!&1.status)))
+          .label Expired Domains
+        = if !@crawl.finished_at do
+          .statistic
+            .value #{@crawl.domains_queued}
+            .label Domains Queued
+  = if !@crawl.finished_at do
+    .row
+      .column
+        .ui.icon.info.message
+          i.notched.circle.loading.icon
+          .content
+            .header Crawl In Progress
+            p This crawl is still in progress, but you can see what I've found so far for you below.
+  = if Map.has_key?(@crawl, :seeds) do
+    .row
+      .column
+        center
+          .ui.blue.labels
+            = for seed <- @crawl.seeds do
+              .ui.label #{seed}
+  end
+  .row
+    .column
+      table.ui.compact.table
+        thead
+          tr
+            th Domain
+            th Status
+        tbody
+          = for domain <- Enum.filter(@crawl.domains, &(&1.status == true)) do
+            tr class="#{if domain.status == true, do: "positive", else: "negative"}"
+              td = domain.domain
+              td = if domain.status == true, do: "Available", else: "Taken"
+              

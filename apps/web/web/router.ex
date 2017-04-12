@@ -42,6 +42,7 @@ defmodule Web.Router do
 
       resources "/users", UserController, only: [:show]
       resources "/crawls", CrawlController
+      get "/crawlset/:id", CrawlController, :show_crawl_set
       # resources "/users", UserController, only: [:show] do
       #   resources "/posts", PostController
       # end

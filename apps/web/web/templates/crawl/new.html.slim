@@ -1,0 +1,7 @@
+.ui.centered.grid.container
+  .row
+    .column
+      h2 New Crawl
+  .row
+    .column
+      = render "form.html", changeset: @changeset, action: crawl_path(@conn, :create)

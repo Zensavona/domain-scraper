@@ -1,1 +1,6 @@
 /* This file is for your main application css. */
+
+.divider-column {
+  position: relative;
+  padding: 0 !important;
+}

@@ -1,0 +1,33 @@
+.row
+  .center.aligned.column
+    .ui.icon.info.message
+      i.search.icon
+      .content
+        .header How To Run a Crawl
+        span There are two kinds of crawls:
+        ul
+          li
+            strong Seed Url:&nbsp;
+            span supply a url to crawl for expired domains, the crawler will search the whole site and return all the domains it finds.
+          li
+            strong Search Phrase:&nbsp;
+            span enter the search phrase you'd like to find relevant domains for, this is best when you aren't sure which site to search.
+
+br
+br
+.ui.centered.two.column.grid.container
+  .row
+    .column
+      = if @changeset.action do
+        p Oops, something went wrong! Please check the errors below.
+  = form_for @changeset, @action, [class: "ui form"], fn f ->
+    .row
+      .ui.left.icon.action.input
+        i.search.icon
+        = text_input f, :seed, placeholder: "Seed Url"
+        button.ui.blue.submit.button Go!
+      .ui.horizontal.divider Or
+      .ui.left.icon.action.input
+        i.search.icon
+        = text_input f, :phrase, placeholder: "Search Phrase"
+        button.ui.blue.submit.button Go!

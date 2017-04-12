@@ -25,11 +25,15 @@ config :logger, :console,
 config :hound, driver: "phantomjs"
 
 config :guardian, Guardian,
- issuer: "Web.#{Mix.env}",
- ttl: {30, :days},
- verify_issuer: true,
- serializer: Web.GuardianSerializer,
- secret_key: to_string(Mix.env) <> "SuPerseCret_aBraCadabrA"
+  issuer: "Web.#{Mix.env}",
+  ttl: {30, :days},
+  verify_issuer: true,
+  serializer: Web.GuardianSerializer,
+  secret_key: to_string(Mix.env) <> "SuPerseCret_aBraCadabrA"
+
+config :phoenix, :template_engines,
+  slim: PhoenixSlime.Engine,
+  slime: PhoenixSlime.Engine
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

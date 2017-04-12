@@ -21,4 +21,8 @@ defmodule Web.CrawlSet do
     |> validate_required([:phrase, :began_at])
     |> cast_assoc(:crawls)
   end
+
+  def by_id_for_user(user, crawl_id) do
+    from c in Web.CrawlSet, where: c.id == ^crawl_id and c.user_id == ^user.id, preload: [{:crawls, :domains}]
+  end
 end

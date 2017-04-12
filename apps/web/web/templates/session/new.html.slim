@@ -1,0 +1,21 @@
+.ui.middle.aligned.center.aligned.grid
+  .four.wide.column
+    br
+    h2.ui.center.aligned.icon.header
+      i.circular.lightning.icon
+      .content
+        span Log in to your account
+    = form_for @conn, session_path(@conn, :create), [as: :session, class: "ui large form"], fn f ->
+      .ui.stacked.segment
+        .field
+          .ui.left.icon.input
+            i.user.icon
+            = text_input f, :email, placeholder: "Email"
+        .field
+          .ui.left.icon.input
+            i.lock.icon
+            = password_input f, :password, placeholder: "Password"
+        = submit "Sign in", class: "ui fluid large teal submit button"
+    .ui.message
+      span New here?&nbsp;&nbsp;
+      a href="/users/new" Sign Up
