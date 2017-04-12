@@ -13,7 +13,7 @@ use Mix.Config
 # which you typically run after static files are built.
 config :web, Web.Endpoint,
   http: [port: 80],
-  url: [host: "test.prod", 80],
+  url: [host: "test.prod", port: 80],
   server: true,
   root: ".",
   cache_static_manifest: "priv/static/manifest.json"
