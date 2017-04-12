@@ -15,7 +15,7 @@ STAGING_USER="elixir_deployer"
 TEST_AT="/home/elixir_deployer/$APP_staging"
 
 PRODUCTION_HOSTS="prod.test" # deploy / production hosts separated by space # 54.163.178.252
-PRODUCTION_USER="elixir_deployer" # local user at deploy hosts
+PRODUCTION_USER="root" # local user at deploy hosts
 
 DELIVER_TO="/home/elixir_deployer/$APP_staging" # deploy directory on production hosts
 
