@@ -8,34 +8,32 @@ defmodule Workers.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-     children = [
-      supervisor(Workers.UrlSupervisor, []),
-      supervisor(Workers.DomainSupervisor, [])
-     ]
+     url_workers =  1..100 |> Enum.map(fn (i) -> supervisor(Workers.UrlSupervisor, [i], [id: {Workers.UrlSupervisor, i}, restart: :temporary]) end)
+     domain_workers = 1..100 |> Enum.map(fn (i) -> supervisor(Workers.DomainSupervisor, [i], [id: {Workers.DomainSupervisor, i}, restart: :temporary]) end)
 
     opts = [strategy: :one_for_one, name: Workers.Supervisor]
-    Supervisor.start_link(children, opts)
+    Supervisor.start_link(url_workers ++ domain_workers, opts)
   end
 end
 
 defmodule Workers.UrlSupervisor do
-  def start_link do
+  def start_link(id) do
     import Supervisor.Spec, warn: false
 
-    children = 1..100 |> Enum.map(fn (i) -> worker(Task, [&Workers.Url.worker/0], [id: {Workers.Url, i}]) end)
+    children = [worker(Task, [&Workers.Url.worker/0], [id: {Workers.Url, id}, restart: :permanent])]
 
-    opts = [strategy: :one_for_one, name: Workers.UrlSupervisor]
+    opts = [strategy: :one_for_one, name: :"url_supervisor_#{id}"]
     Supervisor.start_link(children, opts)
   end
 end
 
 defmodule Workers.DomainSupervisor do
-  def start_link do
+  def start_link(id) do
     import Supervisor.Spec, warn: false
 
-    children = 1..100 |> Enum.map(fn (i) -> worker(Task, [&Workers.Domain.worker/0], [id: {Workers.Domain, i}]) end)
+    children = [worker(Task, [&Workers.Domain.worker/0], [id: {Workers.Domain, id}, restart: :permanent])]
 
-    opts = [strategy: :one_for_one, name: Workers.DomainSupervisor]
+    opts = [strategy: :one_for_one, name: :"domain_supervisor_#{id}"]
     Supervisor.start_link(children, opts)
   end
 end
