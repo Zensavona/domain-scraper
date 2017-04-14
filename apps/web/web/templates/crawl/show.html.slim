@@ -2,6 +2,12 @@
   .row
     .column
       h2.ui.center.aligned.header Crawl for #{@crawl.seed}
+  = if  @crawl.finished_at do
+    center
+      = if Map.has_key?(@crawl, :time_taken_sec) do
+        span completed in #{@crawl.time_taken_sec} sec
+      - else
+        span completed in #{@crawl.time_taken_min} min
   .row
     center
       .ui.small.statistics
