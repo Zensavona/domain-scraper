@@ -36,8 +36,8 @@ config :phoenix, :stacktrace_depth, 20
 # Configure your database
 config :web, Web.Repo,
   adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
+  username: "matteaton",
   password: "",
-  database: "web_prod",
-  hostname: "163.172.191.107",
+  database: "web_dev",
+  hostname: "127.0.0.1",
   pool_size: 10
