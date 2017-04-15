@@ -28,3 +28,5 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+config :scraper, seo_rank_api_key: "8FB14FA69101999FF08F4EE866B3E3C9"

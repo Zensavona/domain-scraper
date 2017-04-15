@@ -14,29 +14,31 @@ defmodule Workers.Domain do
         {crawl_id, domain} ->
           IO.puts "[Domains] found a domain to check: #{domain} (#{crawl_id})"
           case Scraper.Core.check_domain(domain) do
-            :error ->
+            {:error, nil} ->
               DogStatsd.increment(:dogstatsd, "worker.domain.checked")
               DogStatsd.increment(:dogstatsd, "worker.domain.error")
               insert(crawl_id, domain, false)
-            :registered ->
+            {:registered, nil} ->
               DogStatsd.increment(:dogstatsd, "worker.domain.checked")
               DogStatsd.increment(:dogstatsd, "worker.domain.registered")
               # status = false, add to database
               insert(crawl_id, domain, false)
-            :available ->
+            {:available, meta} ->
               DogStatsd.increment(:dogstatsd, "worker.domain.checked")
               DogStatsd.increment(:dogstatsd, "worker.domain.available")
               # status = true, add to database
-              insert(crawl_id, domain, true)
+              insert(crawl_id, domain, true, meta)
           end
       end
     end
     worker()
   end
 
-  defp insert(crawl_id, domain, status) do
+  defp insert(crawl_id, domain, status, meta \\ %{}) do
     if (!Store.DomainsChecked.exists?(crawl_id, domain)) do
-      case Repo.insert(Domain.changeset(%Domain{}, %{domain: domain, status: status, crawl_id: crawl_id})) do
+      data = Map.merge(%{"domain" => domain, "status" => status, "crawl_id" => crawl_id}, Enum.into(meta, %{}))
+      IO.inspect data
+      case Repo.insert(Domain.changeset(%Domain{}, data)) do
         {:ok, _} ->
           Store.DomainsChecked.push(crawl_id, domain)
           IO.puts "[Domains] Inserted #{domain}"

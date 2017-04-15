@@ -51,9 +51,19 @@
           tr
             th Domain
             th Status
+            th Domain Authority
+            th Page Authority
+            th Trust Flow
+            th Citation Flow
+            th MozRank
         tbody
           = for domain <- Enum.filter(@crawl.domains, &(&1.status == true)) do
             tr class="#{if domain.status == true, do: "positive", else: "negative"}"
               td = domain.domain
               td = if domain.status == true, do: "Available", else: "Taken"
+              td = domain.da
+              td = domain.pa
+              td = domain.tf
+              td = domain.cf
+              td = domain.mozrank
               
