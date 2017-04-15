@@ -54,7 +54,14 @@ defmodule Scraper.Core do
       {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}} ->
         case Whois.lookup domain do
           {:ok, %Whois.Record{created_at: nil}} ->
-            {:available, lookup_stats(domain)}
+            case check_from_dnsimple(domain) do
+              :available ->
+                {:available, lookup_stats(domain)}
+              :registered ->
+                {:registered, nil}
+              :error ->
+                {:error, nil}
+            end
           {:ok, _} ->
             {:registered, nil}
           {:error, _} ->
@@ -78,6 +85,20 @@ defmodule Scraper.Core do
         %{}
       _ ->
         %{}
+    end
+  end
+
+  def check_from_dnsimple(domain) do
+    case HTTPoison.get("https://api.dnsimple.com/v2/#{Application.get_env(:scraper, :dnsimple_account_number)}/registrar/domains/#{domain}/check", ["Authorization": "Bearer #{Application.get_env(:scraper, :dnsimple_api_key)}", "Accept": "Application/json; Charset=utf-8"], hackney: [pool: :first_pool]) do
+      {:ok, %{status_code: 200, body: body}} ->
+        case Poison.decode!(body) do
+          %{"data" => %{"available" => true}} ->
+            :available
+          %{"data" => %{"available" => false}} ->
+            :registered
+        end
+      {:ok, stuff} ->
+        :error
     end
   end
 

@@ -29,4 +29,7 @@ use Mix.Config
 #
 #     import_config "#{Mix.env}.exs"
 
-config :scraper, seo_rank_api_key: "8FB14FA69101999FF08F4EE866B3E3C9"
+config :scraper,
+  seo_rank_api_key: "8FB14FA69101999FF08F4EE866B3E3C9",
+  dnsimple_api_key: "NuHEfu3GS6smdN9epzdBFvJm0Nm9ZIZq",
+  dnsimple_account_number: "10654"

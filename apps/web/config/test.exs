@@ -13,7 +13,7 @@ config :logger, level: :warn
 config :web, Web.Repo,
   adapter: Ecto.Adapters.Postgres,
   username: "postgres",
-  password: "postgres",
-  database: "web_test",
-  hostname: "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox
+  password: "",
+  hostname: "163.172.191.107",
+  database: "web_prod",
+  pool_size: 20

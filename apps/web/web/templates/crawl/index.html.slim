@@ -10,7 +10,7 @@
     .column
       .ui.cards
         = for crawl <- @crawls do
-          a.ui.card href="#{if is_list(crawl.domains), do: crawl_path(@conn, :show, crawl), else: crawl_path(@conn, :show_crawl_set, crawl)}"
+          a.ui.card href="#{if !Map.has_key?(crawl, :phrase), do: crawl_path(@conn, :show, crawl), else: crawl_path(@conn, :show_crawl_set, crawl)}"
             .content
               .header = crawl.seed
               .meta
@@ -21,4 +21,5 @@
                 .category
                   = if !is_nil(crawl.finished_at), do: "Finished #{crawl.finished_at}", else: "In Progress"
               .description
-                span #{if is_list(crawl.domains), do: length(crawl.domains), else: crawl.domains} Domains Found
+                - IO.inspect crawl.domains
+                span #{crawl.domains} Expired Domains Found
