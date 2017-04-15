@@ -37,7 +37,6 @@ defmodule Workers.Domain do
   defp insert(crawl_id, domain, status, meta \\ %{}) do
     if (!Store.DomainsChecked.exists?(crawl_id, domain)) do
       data = Map.merge(%{"domain" => domain, "status" => status, "crawl_id" => crawl_id}, Enum.into(meta, %{}))
-      IO.inspect data
       case Repo.insert(Domain.changeset(%Domain{}, data)) do
         {:ok, _} ->
           Store.DomainsChecked.push(crawl_id, domain)

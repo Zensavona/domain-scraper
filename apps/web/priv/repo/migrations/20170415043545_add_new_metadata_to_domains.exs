@@ -3,27 +3,27 @@ defmodule Web.Repo.Migrations.AddNewMetadataToDomains do
 
   def change do
     alter table(:domains) do
-      add :tf, :float
-      add :cf, :float
-      add :da, :float
-      add :pa, :float
-      add :mozrank, :float
-      add :a_cnt, :float
-      add :a_cnt_r, :float
-      add :a_links, :float
-      add :a_rank, :integer
-      add :el, :float
-      add :equity, :float
-      add :links, :integer
-      add :refd, :float
-      add :spam, :float
-      add :sr_costs, :float
-      add :sr_dlinks, :integer
-      add :sr_hlinks, :integer
-      add :sr_kwords, :integer
-      add :sr_rank, :float
-      add :sr_traffic, :float
-      add :sr_ulinks, :integer
+      add :tf, :string
+      add :cf, :string
+      add :da, :string
+      add :pa, :string
+      add :mozrank, :string
+      add :a_cnt, :string
+      add :a_cnt_r, :string
+      add :a_links, :string
+      add :a_rank, :string
+      add :el, :string
+      add :equity, :string
+      add :links, :string
+      add :refd, :string
+      add :spam, :string
+      add :sr_costs, :string
+      add :sr_dlinks, :string
+      add :sr_hlinks, :string
+      add :sr_kwords, :string
+      add :sr_rank, :string
+      add :sr_traffic, :string
+      add :sr_ulinks, :string
     end
   end
 end

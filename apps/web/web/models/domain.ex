@@ -4,27 +4,27 @@ defmodule Web.Domain do
   schema "domains" do
     field :domain, :string
     field :status, :boolean, default: false
-    field :tf, :float
-    field :cf, :float
-    field :da, :float
-    field :pa, :float
-    field :mozrank, :float
-    field :a_cnt, :float
-    field :a_cnt_r, :float
-    field :a_links, :float
-    field :a_rank, :integer
-    field :el, :float
-    field :equity, :float
-    field :links, :integer
-    field :refd, :float
-    field :spam, :float
-    field :sr_costs, :float
-    field :sr_dlinks, :integer
-    field :sr_hlinks, :integer
-    field :sr_kwords, :integer
-    field :sr_rank, :float
-    field :sr_traffic, :float
-    field :sr_ulinks, :integer
+    field :tf, :string
+    field :cf, :string
+    field :da, :string
+    field :pa, :string
+    field :mozrank, :string
+    field :a_cnt, :string
+    field :a_cnt_r, :string
+    field :a_links, :string
+    field :a_rank, :string
+    field :el, :string
+    field :equity, :string
+    field :links, :string
+    field :refd, :string
+    field :spam, :string
+    field :sr_costs, :string
+    field :sr_dlinks, :string
+    field :sr_hlinks, :string
+    field :sr_kwords, :string
+    field :sr_rank, :string
+    field :sr_traffic, :string
+    field :sr_ulinks, :string
 
 
     belongs_to :crawl, Web.Crawl

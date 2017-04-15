@@ -61,7 +61,7 @@ defmodule Scraper.Core do
             {:error, nil}
         end
       _ ->
-      :error
+      {:error, nil}
     end
   end
 
@@ -70,11 +70,11 @@ defmodule Scraper.Core do
       {:ok, %{status_code: 200, body: body}} ->
         case Poison.decode(body) do
           {:ok, data} ->
-            data |> Enum.filter(fn({_k, v}) -> Float.parse("#{v}") !== :error end)
+            data |> Enum.filter(fn({_k, v}) -> Float.parse("#{v}") !== :error end) |> Enum.map(fn({k, v}) -> {k, "#{v}"} end) |> Enum.into(%{})
           _ ->
             %{}
         end
-      {:error, _} ->
+      {:error, response} ->
         %{}
       _ ->
         %{}

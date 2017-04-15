@@ -4,10 +4,12 @@ defmodule Finisher do
   """
   alias Web.Repo
   alias Web.Crawl
+  alias Web.Domain
   import Ecto.Query
 
   def start do
     :timer.apply_interval(5000, Finisher, :finish, [])
+    :timer.apply_interval(5000, Finisher, :find_unfound_domain_stats, [])
   end
 
   def finish do
@@ -30,6 +32,17 @@ defmodule Finisher do
 
         finish_crawl(crawl.id, time_to_end_at, crawled_urls)
       end
+    end)
+  end
+
+  def find_unfound_domain_stats do
+    IO.puts "[Finisher] Finding unfound domain stats"
+    domains = Repo.all(from d in Domain, where: d.status == true and is_nil(d.da))
+    domains = domains |> Enum.map(fn(domain) ->
+      IO.puts "[Finisher] looking up stats for #{domain.domain}"
+      stats = Scraper.Core.lookup_stats(domain.domain) |> Enum.map(fn({k, v}) -> {String.to_atom(k), v} end) |> Enum.into(%{})
+      changeset = Domain.changeset(domain, stats)
+      Repo.update!(changeset)
     end)
   end
 
