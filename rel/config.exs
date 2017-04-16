@@ -31,7 +31,7 @@ end
 # will be used by default
 
 release :domain_scraper do
-  set version: "0.1.7"
+  set version: "0.1.8"
   set applications: [
     finisher: :permanent,
     scheduler: :permanent,
