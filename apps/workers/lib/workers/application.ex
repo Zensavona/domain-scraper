@@ -8,8 +8,8 @@ defmodule Workers.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-     url_workers =  1..100 |> Enum.map(fn (i) -> supervisor(Workers.UrlSupervisor, [i], [id: {Workers.UrlSupervisor, i}, restart: :permanent]) end)
-     domain_workers = 1..100 |> Enum.map(fn (i) -> supervisor(Workers.DomainSupervisor, [i], [id: {Workers.DomainSupervisor, i}, restart: :permanent]) end)
+     url_workers =  1..50 |> Enum.map(fn (i) -> supervisor(Workers.UrlSupervisor, [i], [id: {Workers.UrlSupervisor, i}, restart: :permanent]) end)
+     domain_workers = 1..50 |> Enum.map(fn (i) -> supervisor(Workers.DomainSupervisor, [i], [id: {Workers.DomainSupervisor, i}, restart: :permanent]) end)
 
     opts = [strategy: :one_for_one, name: Workers.Supervisor]
     Supervisor.start_link(url_workers ++ domain_workers, opts)
