@@ -1,0 +1,24 @@
+.ui.middle.aligned.center.aligned.grid.container
+  .row
+    .column
+      table.ui.compact.table
+        thead
+          tr
+            th Domain
+            th Status
+            th Domain Authority
+            th Page Authority
+            th Trust Flow
+            th Citation Flow
+            th MozRank
+        tbody
+          = for domain <- @domains do
+            tr class="#{if domain.status == true, do: "positive", else: "negative"}"
+              td = domain.domain
+              td = if domain.status == true, do: "Available", else: "Taken"
+              td = domain.da
+              td = domain.pa
+              td = domain.tf
+              td = domain.cf
+              td = domain.mozrank
+          

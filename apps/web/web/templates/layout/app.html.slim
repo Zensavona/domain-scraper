@@ -12,6 +12,7 @@ html
           .ui.large.secondary.pointing.menu
             = if @current_user do
               a.item href="/crawls" Crawls
+              a.item href="/domains" Domains
             - else
               a.item href="/" Home
             .right.menu
