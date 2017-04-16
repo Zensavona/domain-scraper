@@ -111,17 +111,11 @@ defmodule Scraper.Core do
     bits = Domainatrex.parse(host)
     "#{bits.domain}.#{bits.tld}"
   end
-  defp remove_double_slashes_from_url(url) do
-    parts = String.split(url, "//", parts: 2)
-    replacement = parts |> Enum.fetch!(1) |> String.replace("//", "/")
-
-    parts |> List.replace_at(1, replacement) |> Enum.join("//")
-  end
   defp normalise_urls(urls, base_url) do
     urls
+      |> Enum.filter(&domain_kind_of_at_least_makes_sense?/1)
       |> Enum.reject(&String.contains?(&1, "mailto:"))
       |> Enum.map(fn(u) -> if !String.contains?(u, "http"), do: "#{base_url}/#{u}", else: u end)
-      |> Enum.map(&remove_double_slashes_from_url/1)
   end
   defp domain_kind_of_at_least_makes_sense?(domain) do
     if is_bitstring(domain) && String.contains?(domain, ".") do
