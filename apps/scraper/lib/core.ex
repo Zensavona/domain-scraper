@@ -46,28 +46,32 @@ defmodule Scraper.Core do
   # private
 
   def check_domain(domain) do
-    parsed = Domainatrex.parse(domain)
-    domain = "#{Map.get(parsed, :domain)}.#{Map.get(parsed, :tld)}"
-    case HTTPoison.get(domain, [], hackney: [pool: :first_pool]) do
-      {:ok, _} ->
-        {:registered, nil}
-      {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}} ->
-        case Whois.lookup domain do
-          {:ok, %Whois.Record{created_at: nil}} ->
-            case check_from_dnsimple(domain) do
-              :available ->
-                {:available, lookup_stats(domain)}
-              :registered ->
-                {:registered, nil}
-              :error ->
-                {:error, nil}
-            end
-          {:ok, _} ->
-            {:registered, nil}
-          {:error, _} ->
-            {:error, nil}
-        end
-      _ ->
+    if domain_kind_of_at_least_makes_sense?(domain) do
+      parsed = Domainatrex.parse(domain)
+      domain = "#{Map.get(parsed, :domain)}.#{Map.get(parsed, :tld)}"
+      case HTTPoison.get(domain, [], hackney: [pool: :first_pool]) do
+        {:ok, _} ->
+          {:registered, nil}
+        {:error, %HTTPoison.Error{id: nil, reason: :nxdomain}} ->
+          case Whois.lookup domain do
+            {:ok, %Whois.Record{created_at: nil}} ->
+              case check_from_dnsimple(domain) do
+                :available ->
+                  {:available, lookup_stats(domain)}
+                :registered ->
+                  {:registered, nil}
+                :error ->
+                  {:error, nil}
+              end
+            {:ok, _} ->
+              {:registered, nil}
+            {:error, _} ->
+              {:error, nil}
+          end
+        _ ->
+        {:error, nil}
+      end
+    else
       {:error, nil}
     end
   end
@@ -118,5 +122,12 @@ defmodule Scraper.Core do
       |> Enum.reject(&String.contains?(&1, "mailto:"))
       |> Enum.map(fn(u) -> if !String.contains?(u, "http"), do: "#{base_url}/#{u}", else: u end)
       |> Enum.map(&remove_double_slashes_from_url/1)
+  end
+  defp domain_kind_of_at_least_makes_sense?(domain) do
+    if is_bitstring(domain) && String.contains?(domain, ".") do
+      true
+    else
+      false
+    end
   end
 end
