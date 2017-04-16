@@ -6,11 +6,31 @@
           tr
             th Domain
             th Status
-            th Domain Authority
-            th Page Authority
-            th Trust Flow
-            th Citation Flow
-            th MozRank
+            th
+              a href="/domains?sort=da"
+                span Domain Authority
+                = if @sort_by == :da do
+                  i.angle.down.icon
+            th
+              a href="/domains?sort=pa"
+                span Page Authority
+                = if @sort_by == :pa do
+                  i.angle.down.icon
+            th
+              a href="/domains?sort=tf"
+                span Trust Flow
+                = if @sort_by == :tf do
+                  i.angle.down.icon
+            th
+              a href="/domains?sort=cf"
+                span Citation Flow
+                = if @sort_by == :cf do
+                  i.angle.down.icon
+            th
+              a href="/domains?sort=mozrank"
+                span MozRank
+                = if @sort_by == :mozrank do
+                  i.angle.down.icon
         tbody
           = for domain <- @domains do
             tr class="#{if domain.status == true, do: "positive", else: "negative"}"

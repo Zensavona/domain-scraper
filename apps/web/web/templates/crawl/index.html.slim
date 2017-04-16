@@ -21,5 +21,4 @@
                 .category
                   = if !is_nil(crawl.finished_at), do: "Finished #{crawl.finished_at}", else: "In Progress"
               .description
-                - IO.inspect crawl.domains
                 span #{crawl.domains} Expired Domains Found

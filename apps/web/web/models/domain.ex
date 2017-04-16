@@ -6,11 +6,11 @@ defmodule Web.Domain do
   schema "domains" do
     field :domain, :string
     field :status, :boolean, default: false
-    field :tf, :string
-    field :cf, :string
-    field :da, :string
-    field :pa, :string
-    field :mozrank, :string
+    field :tf, :float
+    field :cf, :float
+    field :da, :float
+    field :pa, :float
+    field :mozrank, :float
     field :a_cnt, :string
     field :a_cnt_r, :string
     field :a_links, :string
@@ -46,8 +46,10 @@ defmodule Web.Domain do
     |> unique_constraint(:domain, name: :unique_crawl_id_domain_combination)
   end
 
-  def by_id_for_user(user) do
-    from d in Web.Domain, join: c in Crawl, where: c.user_id == ^user.id and d.status == true, order_by: [desc: [d.da, d.pa, d.tf, d.cf, d.mozrank]]
-    # from d in Web.Domain, preload: [:crawl], where: d.crawl.user_id == ^user.id
+  def by_id_for_user(user, sort_by \\ :da) do
+    allowed = [:da, :pa, :tf, :cf, :mozrank]
+    sort_by = if Enum.member?(allowed, sort_by), do: sort_by, else: :da
+
+    from d in Web.Domain, join: c in Crawl, where: c.user_id == ^user.id and d.status == true, order_by: [desc: ^sort_by]
   end
 end
