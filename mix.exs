@@ -23,7 +23,6 @@ defmodule DomainScraper.Mixfile do
   defp deps do
     [
       {:redix, ">= 0.0.0"},
-      {:dogstatsd, "0.0.3"},
       {:distillery, "~> 0.9"},
       {:edeliver, "~> 1.4.0"},
       {:lmgtfy, "~> 0.1.0"},

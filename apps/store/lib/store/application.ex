@@ -3,21 +3,16 @@ defmodule Store.Application do
   # for more information on OTP Applications
   @moduledoc false
 
-  require DogStatsd
   use Application
 
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
-
-    # {:ok, dogstatsd} = DogStatsd.new("localhost", 8125)
-    # Process.register dogstatsd, :dogstatsd
 
     # Define workers and child supervisors to be supervised
     children = [
       # Starts a worker by calling: Store.Worker.start_link(arg1, arg2, arg3)
       # worker(Store.ToCrawl, [[]]),
       # worker(Store.Domains, [[]]),
-      worker(DogStatsd, [%{}, [name: :dogstatsd]])
     ]
 
     pool_size = 100
