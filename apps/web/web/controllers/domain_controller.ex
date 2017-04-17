@@ -9,7 +9,7 @@ defmodule Web.DomainController do
 
   def index(conn, %{"sort" => sort_by}, current_user) do
     sort_by = String.to_atom(sort_by)
-    domains = current_user |> Domain.by_id_for_user(sort_by) |> Repo.all
+    domains = current_user |> Domain.by_id_for_user(sort_by) |> Repo.all |> Repo.preload(:crawl)
     render(conn, "index.html", domains: domains, sort_by: sort_by)
   end
 

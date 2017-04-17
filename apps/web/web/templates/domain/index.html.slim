@@ -5,7 +5,7 @@
         thead
           tr
             th Domain
-            th Status
+            th Seed Url
             th
               a href="/domains?sort=da"
                 span Domain Authority
@@ -35,7 +35,7 @@
           = for domain <- @domains do
             tr class="#{if domain.status == true, do: "positive", else: "negative"}"
               td = domain.domain
-              td = if domain.status == true, do: "Available", else: "Taken"
+              td = domain.crawl.seed
               td = domain.da
               td = domain.pa
               td = domain.tf
