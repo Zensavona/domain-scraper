@@ -15,7 +15,7 @@ defmodule Web.DomainController do
 
   def index(conn, _params, current_user) do
     sort_by = :da
-    domains = current_user |> Domain.by_id_for_user(sort_by) |> Repo.all
+    domains = current_user |> Domain.by_id_for_user(sort_by) |> Repo.all |> Repo.preload(:crawl)
     render(conn, "index.html", domains: domains, sort_by: sort_by)
   end
 end
