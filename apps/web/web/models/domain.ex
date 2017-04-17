@@ -50,6 +50,6 @@ defmodule Web.Domain do
     allowed = [:da, :pa, :tf, :cf, :mozrank]
     sort_by = if Enum.member?(allowed, sort_by), do: sort_by, else: :da
 
-    from d in Web.Domain, join: c in Crawl, where: c.user_id == ^user.id and d.status == true, order_by: [desc: ^sort_by]
+    from d in Web.Domain, join: c in Crawl, where: c.id == d.crawl_id and c.user_id == ^user.id and d.status == true, order_by: [desc: ^sort_by]
   end
 end
