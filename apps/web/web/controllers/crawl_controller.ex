@@ -10,19 +10,14 @@ defmodule Web.CrawlController do
   end
 
   def index(conn, _params, current_user) do
-    crawls = current_user |> Crawl.all_for_user_without_crawl_set_members |> Repo.all |> Repo.preload(:domains)
+    crawls = current_user |> Crawl.all_for_user_without_crawl_set_members |> Repo.all
 
-    crawl_sets = Repo.all(from c in CrawlSet, where: c.user_id == ^current_user.id, preload: [{:crawls, :domains}]) |> Enum.map(fn(crawl_set) ->
-      domains = Enum.reduce(crawl_set.crawls, 0, fn(c, acc) -> acc + length(Enum.filter(c.domains, &(&1.status == true))) end)
-      crawl_set |> Map.put(:domains, domains) |> Map.put(:seed, crawl_set.phrase)
-    end)
+    crawl_sets = Repo.all(from c in CrawlSet, where: c.user_id == ^current_user.id, preload: :crawls)
 
     crawls = crawls ++ crawl_sets
 
     crawls = Enum.map(crawls, fn(c) ->
       c = Map.put(c, :began_at, Timex.from_now(Timex.to_datetime(Ecto.DateTime.to_erl(c.began_at))))
-      avail_domains = Enum.filter(c.domains, &(&1.status == true))
-      c = Map.put(c, :domains, length(avail_domains))
       if c.finished_at do
         Map.put(c, :finished_at, Timex.from_now(Timex.to_datetime(Ecto.DateTime.to_erl(c.finished_at))))
       else

@@ -10,7 +10,7 @@
     .column
       .ui.cards
         = for crawl <- @crawls do
-          a.ui.card href="#{if !Map.has_key?(crawl, :phrase), do: crawl_path(@conn, :show, crawl), else: crawl_path(@conn, :show_crawl_set, crawl)}"
+          a.ui.card class="#{if !is_nil(crawl.finished_at), do: 'green'}" href="#{if !Map.has_key?(crawl, :phrase), do: crawl_path(@conn, :show, crawl), else: crawl_path(@conn, :show_crawl_set, crawl)}"
             .content
               .header = crawl.seed
               .meta
@@ -19,6 +19,8 @@
                     span Kicked off&nbsp;
                       = crawl.began_at
                 .category
-                  = if !is_nil(crawl.finished_at), do: "Finished #{crawl.finished_at}", else: "In Progress"
-              .description
-                span #{crawl.domains} Expired Domains Found
+                  = if !is_nil(crawl.finished_at) do
+                    span "Finished #{crawl.finished_at}"
+                  - else
+                    i.notched.circle.loading.icon
+                    span "In Progress"
