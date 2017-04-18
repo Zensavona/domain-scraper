@@ -13,7 +13,7 @@
 alias Web.Repo
 alias Web.User
 
-zen = User.registration_changeset(%User{}, %{email: "z@zen.id.au", first_name: "Zen", last_name: "Savona", password: "tex19932008"})
+zen = User.registration_changeset(%User{}, %{email: "z@zen.id.au", first_name: "Zen", last_name: "Savona", password: "zenzenzen"})
 Repo.insert!(zen)
 
 kevin = User.registration_changeset(%User{}, %{email: "kevin@kevingraham.com", first_name: "Kevin", last_name: "Graham", password: "kevkevkev"})
@@ -21,3 +21,6 @@ Repo.insert!(kevin)
 
 jesse = User.registration_changeset(%User{}, %{email: "jesse@jessehanley.com", first_name: "Jesse", last_name: "Hanley", password: "jessejesse"})
 Repo.insert!(jesse)
+
+matt = User.registration_changeset(%User{}, %{email: "matt", first_name: "Matt", last_name: "Eaton", password: "mattmattmatt"})
+Repo.insert!(matt)
