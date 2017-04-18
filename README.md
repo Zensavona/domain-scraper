@@ -4,6 +4,12 @@ This application crawls a url provided by the user and finds all the expired dom
 
 It requires that a Redis server be running on the local machine (no auth), Postgres with credentials set in `apps/web/config/dev.exs` and the `Lmgtfy` dependency requires `phantomjs` be installed on the system's PATH.
 
+To run it for the first time:
+
+- make sure Redis is running
+- go to `apps/web` and run `mix ecto.setup`
+- go back to `/` and run `iex -S mix phoenix.server` (this is all you need to run in future)
+
 ## Finisher
 
 `Finisher` is responsible for finishing things up.
@@ -37,4 +43,4 @@ This is the web interface to the application, built with Phoenix. It also handle
 
 Here is where most of the actual functionality happens. There are two kinds of workers, Url workers and Domain workers. The role of a worker is to get a new thing to process (be it a domain or a url), process it, handle it and then call itself again. If there are no things to process, it waits 1 second and looks again.
 
-In `apps/workers/lib/workers/application.ex` you can see the amount of workers being started up (right now, 200 of each kind). Each worker has it's own supervisor and all of those supervisors are supervised by one other supervisor. This is to prevent issues where (for example) a website's firewall thinks we're DoSing them and blocks all connections. Suddenly a lot of workers will crash in quick sucession. This could overload a single supervisor trying to handle restarting all 400 of them at once, so it's better for each to have their own supervisor. 
+In `apps/workers/lib/workers/application.ex` you can see the amount of workers being started up (right now, 200 of each kind). Each worker has it's own supervisor and all of those supervisors are supervised by one other supervisor. This is to prevent issues where (for example) a website's firewall thinks we're DoSing them and blocks all connections. Suddenly a lot of workers will crash in quick sucession. This could overload a single supervisor trying to handle restarting all 400 of them at once, so it's better for each to have their own supervisor.
