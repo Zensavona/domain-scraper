@@ -1,6 +1,12 @@
 defmodule Scraper.Core do
   alias HTTPoison
 
+  @doc """
+    Transform a single URL into a tuple containing two lists: urls and domains contained at that url.
+    Examples:
+      {:ok, urls, domains}
+      {:error, original_url}
+  """
   def url_to_urls_and_domains(url) do
     domain = url |> domain_from_url
     case HTTPoison.get(url, [], hackney: [pool: :first_pool]) do
@@ -43,8 +49,12 @@ defmodule Scraper.Core do
     end
   end
 
-  # private
-
+  @doc """
+    Check the status of a domain. This is a rather difficult process so it's split into multiple steps to save DNSimple API calls (limited to 2400/hr)
+    1. Just do a GET request to it, if that doesn't return :nxdomain, we know it's registered.
+    2. Check Whois, this mostly works but returns some false positive.
+    3. If both of those things indicate the domain is available, check the DNSimple API to see if it can be registered.
+  """
   def check_domain(domain) do
     if domain_kind_of_at_least_makes_sense?(domain) do
       parsed = Domainatrex.parse(domain)
@@ -76,7 +86,9 @@ defmodule Scraper.Core do
     end
   end
 
-  def lookup_stats(domain) do
+  # private
+
+  defp lookup_stats(domain) do
     case HTTPoison.get("https://seo-rank.my-addr.com/api2/moz+alexa+sr+maj+spam/#{Application.get_env(:scraper, :seo_rank_api_key)}/#{domain}", [], hackney: [pool: :first_pool]) do
       {:ok, %{status_code: 200, body: body}} ->
         case Poison.decode(body) do
@@ -92,7 +104,7 @@ defmodule Scraper.Core do
     end
   end
 
-  def check_from_dnsimple(domain) do
+  defp check_from_dnsimple(domain) do
     case HTTPoison.get("https://api.dnsimple.com/v2/#{Application.get_env(:scraper, :dnsimple_account_number)}/registrar/domains/#{domain}/check", ["Authorization": "Bearer #{Application.get_env(:scraper, :dnsimple_api_key)}", "Accept": "Application/json; Charset=utf-8"], hackney: [pool: :first_pool]) do
       {:ok, %{status_code: 200, body: body}} ->
         case Poison.decode!(body) do
