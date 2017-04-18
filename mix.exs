@@ -26,6 +26,7 @@ defmodule DomainScraper.Mixfile do
       {:distillery, "~> 0.9"},
       {:edeliver, "~> 1.4.0"},
       {:lmgtfy, "~> 0.1.0"},
+      {:scout_apm, "~> 0.0"},
     ]
   end
 end

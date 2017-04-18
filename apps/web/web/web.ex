@@ -29,6 +29,7 @@ defmodule Web.Web do
   def controller do
     quote do
       use Phoenix.Controller
+      use ScoutApm.Instrumentation
 
       alias Web.Repo
       import Ecto
