@@ -6,6 +6,7 @@ defmodule Web.Crawl do
     field :urls, :integer
     field :finished_at, Ecto.DateTime
     field :began_at, Ecto.DateTime
+    field :is_queued, :boolean
 
     belongs_to :user, Web.User
     belongs_to :crawl_set, Web.CrawlSet
@@ -19,8 +20,9 @@ defmodule Web.Crawl do
   """
   def changeset(struct, params \\ %{}) do
     struct
-    |> cast(params, [:seed, :finished_at, :began_at, :urls])
+    |> cast(params, [:seed, :finished_at, :began_at, :urls, :is_queued])
     |> validate_required([:seed, :began_at])
+    |> cast_assoc(:user)
   end
 
   def all_for_user_without_crawl_set_members(user) do

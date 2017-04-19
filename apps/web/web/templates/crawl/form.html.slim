@@ -15,6 +15,7 @@
 
 br
 br
+
 .ui.centered.two.column.grid.container
   .row
     .column
@@ -26,7 +27,15 @@ br
         i.search.icon
         = text_input f, :seed, placeholder: "Seed Url"
         button.ui.blue.submit.button Go!
+        
       .ui.horizontal.divider Or
+      
+      .ui.left.icon.action.input
+        = textarea f, :seed_list, placeholder: "Bulk Add (1 per line)", cols: 100
+        button.ui.blue.submit.button Go!
+        
+      .ui.horizontal.divider Or
+      
       .ui.left.icon.action.input
         i.search.icon
         = text_input f, :phrase, placeholder: "Search Phrase"

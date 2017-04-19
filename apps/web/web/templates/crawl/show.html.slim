@@ -28,7 +28,15 @@
           .statistic
             .value #{@crawl.domains_queued}
             .label Domains Queued
-  = if !@crawl.finished_at do
+  = if @crawl.is_queued do
+    .row
+      .column
+        .ui.icon.info.message
+          i.hourglass.empty.icon
+          .content
+            .header Crawl Queued
+            p This crawl will start when one of your others finishes.
+  = if !@crawl.finished_at && !@crawl.is_queued do
     .row
       .column
         .ui.icon.info.message

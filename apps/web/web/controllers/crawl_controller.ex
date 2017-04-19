@@ -12,7 +12,16 @@ defmodule Web.CrawlController do
   def index(conn, _params, current_user) do
     crawls = current_user |> Crawl.all_for_user_without_crawl_set_members |> Repo.all
 
-    crawl_sets = Repo.all(from c in CrawlSet, where: c.user_id == ^current_user.id, preload: :crawls)
+    crawl_sets = Repo.all(from c in CrawlSet, where: c.user_id == ^current_user.id, preload: :crawls) |> Enum.map(fn(crawl_set) ->
+                                                                                                          queued = Enum.reduce(crawl_set.crawls, false, fn(c, acc) ->
+                                                                                                            if (acc == false && c.is_queued == true) do
+                                                                                                              true
+                                                                                                            else
+                                                                                                              acc
+                                                                                                            end
+                                                                                                          end)
+                                                                                                          Map.put(crawl_set, :is_queued, queued)
+                                                                                                        end)
 
     crawls = crawls ++ crawl_sets
 
@@ -33,51 +42,63 @@ defmodule Web.CrawlController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"crawl" => crawl_params}, current_user) do
-    case Map.get(crawl_params, "phrase") do
-      "" ->
-        # changeset = Crawl.changeset(%Crawl{began_at: Ecto.DateTime.utc}, crawl_params)
-        changeset =
-          current_user
-          |> build_assoc(:crawls)
-          |> Crawl.changeset(Map.put(crawl_params, "began_at", Ecto.DateTime.utc))
+  # one url
+  def create(conn, %{"crawl" => %{"seed" => seed, "phrase" => "", "seed_list" => ""}}, current_user) do
+    crawl_params = %{"seed" => seed, "is_queued" => true} # Map.put(crawl_params, "is_queued", true)
 
-        case Repo.insert(changeset) do
-          {:ok, crawl} ->
-            Scheduler.add_crawl(crawl.id)
-            Scraper.start_new_crawl(crawl.id, crawl.seed)
-            conn
-            |> put_flash(:info, "Crawl created successfully.")
-            |> redirect(to: crawl_path(conn, :index))
-          {:error, changeset} ->
-            render(conn, "new.html", changeset: changeset)
-        end
-      phrase ->
-        seeds = phrase |> Lmgtfy.search |> Enum.uniq_by(fn(i) -> URI.parse(i).host end) |> Enum.take(10)
-        crawls = Enum.map(seeds, fn(s) -> %{began_at: Ecto.DateTime.utc, seed: s} end)
+    changeset =
+      current_user
+      |> build_assoc(:crawls)
+      |> Crawl.changeset(Map.put(crawl_params, "began_at", Ecto.DateTime.utc))
 
-        # changeset = CrawlSet.changeset(%CrawlSet{began_at: Ecto.DateTime.utc}, %{phrase: phrase, crawls: crawls})
-        crawl_set_params = %{began_at: Ecto.DateTime.utc, phrase: phrase, crawls: crawls}
+    case Repo.insert(changeset) do
+      {:ok, crawl} ->
+        # Scheduler.add_crawl(crawl.id)
+        # Scraper.start_new_crawl(crawl.id, crawl.seed)
+        conn
+        |> put_flash(:info, "Crawl created successfully.")
+        |> redirect(to: crawl_path(conn, :index))
+      {:error, changeset} ->
+        render(conn, "new.html", changeset: changeset)
+    end
+  end
 
-        changeset =
-          current_user
-          |> build_assoc(:crawl_sets)
-          |> CrawlSet.changeset(crawl_set_params)
+  # bulk urls
+  def create(conn, %{"crawl" => %{"seed" => "", "phrase" => "", "seed_list" => seed_list}}, current_user) do
+    crawls = seed_list
+      |> String.split("\n")
+      |> Enum.map(&(String.trim_trailing(&1, "\r")))
+      |> Enum.map(fn(s) -> Crawl.changeset(%Crawl{began_at: Ecto.DateTime.utc, is_queued: true, seed: s, user_id: current_user.id}) end)
 
-        case Repo.insert(changeset) do
-          {:ok, crawl_set} ->
-            crawl_set = Repo.preload(crawl_set, :crawls)
-            Enum.each(crawl_set.crawls, fn(c) ->
-              Scheduler.add_crawl(c.id)
-              Scraper.start_new_crawl(c.id, c.seed)
-            end)
+    Enum.each(crawls, &Repo.insert!/1)
 
-            conn
-            |> put_flash(:info, "Crawl Set created successfully.")
-            |> redirect(to: crawl_path(conn, :index))
-          {:error, changeset} ->
-            render(conn, "new.html", changeset: changeset)
-        end
+    conn
+    |> put_flash(:info, "Crawl Set created successfully.")
+    |> redirect(to: crawl_path(conn, :index))
+  end
+
+  # phrase
+  def create(conn, %{"crawl" => %{"phrase" => phrase, "seed" => "", "seed_list" => ""}}, current_user) do
+    crawl_params = %{"phrase" => phrase, "is_queued" => true} # Map.put(crawl_params, "is_queued", true)
+
+    seeds = phrase |> Lmgtfy.search |> Enum.uniq_by(fn(i) -> URI.parse(i).host end) |> Enum.take(10)
+    crawls = Enum.map(seeds, fn(s) -> %{began_at: Ecto.DateTime.utc, seed: s, is_queued: true} end)
+
+    # changeset = CrawlSet.changeset(%CrawlSet{began_at: Ecto.DateTime.utc}, %{phrase: phrase, crawls: crawls})
+    crawl_set_params = %{began_at: Ecto.DateTime.utc, phrase: phrase, crawls: crawls}
+
+    changeset =
+      current_user
+      |> build_assoc(:crawl_sets)
+      |> CrawlSet.changeset(crawl_set_params)
+
+    case Repo.insert(changeset) do
+      {:ok, crawl_set} ->
+        conn
+        |> put_flash(:info, "Crawl Set created successfully.")
+        |> redirect(to: crawl_path(conn, :index))
+      {:error, changeset} ->
+        render(conn, "new.html", changeset: changeset)
     end
   end
 
@@ -116,6 +137,15 @@ defmodule Web.CrawlController do
     # crawl = Repo.get!(Crawl, id) |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status]))
     crawl = current_user |> CrawlSet.by_id_for_user(id) |> Repo.one # |> Repo.preload(domains: from(d in Domain, order_by: [desc: d.status]))
     crawl = Map.put(crawl, :seed, crawl.phrase)
+
+    queued = Enum.reduce(crawl.crawls, false, fn(c, acc) ->
+      if (acc == false && c.is_queued == true) do
+        true
+      else
+        acc
+      end
+    end)
+    crawl = Map.put(crawl, :is_queued, queued)
 
     domains = Enum.map(crawl.crawls, fn(c) -> c.domains end) |> List.flatten
     urls = Enum.reduce(crawl.crawls, 0, fn(c, acc) -> acc + if is_nil(c.urls), do: 0, else: c.urls end)

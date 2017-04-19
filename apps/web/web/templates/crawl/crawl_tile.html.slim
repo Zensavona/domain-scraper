@@ -1,0 +1,16 @@
+a.ui.card class="#{if !is_nil(@crawl.finished_at), do: 'green'}" href="#{if !Map.has_key?(@crawl, :phrase), do: crawl_path(@conn, :show, @crawl), else: crawl_path(@conn, :show_crawl_set, @crawl)}"
+  .content
+    .header = if Map.has_key?(@crawl, :seed), do: @crawl.seed, else: @crawl.phrase
+    .meta
+      .right.floated.time
+        = if is_nil(@crawl.finished_at) && @crawl.is_queued == false do
+          span Kicked off&nbsp;
+            = @crawl.began_at
+        = if @crawl.is_queued do
+          span Queued&nbsp;
+      .category
+        = if !is_nil(@crawl.finished_at) do
+          span "Finished #{@crawl.finished_at}"
+        = if is_nil(@crawl.finished_at) && !@crawl.is_queued do
+          i.notched.circle.loading.icon
+          span "In Progress"

@@ -9,18 +9,18 @@
   .row
     .column
       .ui.cards
-        = for crawl <- @crawls do
-          a.ui.card class="#{if !is_nil(crawl.finished_at), do: 'green'}" href="#{if !Map.has_key?(crawl, :phrase), do: crawl_path(@conn, :show, crawl), else: crawl_path(@conn, :show_crawl_set, crawl)}"
-            .content
-              .header = crawl.seed
-              .meta
-                .right.floated.time
-                  = if is_nil(crawl.finished_at) do
-                    span Kicked off&nbsp;
-                      = crawl.began_at
-                .category
-                  = if !is_nil(crawl.finished_at) do
-                    span "Finished #{crawl.finished_at}"
-                  - else
-                    i.notched.circle.loading.icon
-                    span "In Progress"
+        - in_progress = Enum.filter(@crawls, fn(c) -> is_nil(c.finished_at) && c.is_queued == false end)
+        - queued = Enum.filter(@crawls, &(&1.is_queued == true))
+        - finished = Enum.filter(@crawls, &(!is_nil(&1.finished_at)))
+        = for crawl <- in_progress do
+          = render "crawl_tile.html", crawl: crawl, conn: @conn
+      br
+      .ui.cards
+        = for crawl <- queued do
+          = render "crawl_tile.html", crawl: crawl, conn: @conn
+      br
+      .ui.cards
+        = for crawl <- finished do
+          = render "crawl_tile.html", crawl: crawl, conn: @conn
+                  
+                  
