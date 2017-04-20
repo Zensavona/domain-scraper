@@ -88,7 +88,7 @@ defmodule Scraper.Core do
 
   # private
 
-  defp lookup_stats(domain) do
+  def lookup_stats(domain) do
     case HTTPoison.get("https://seo-rank.my-addr.com/api2/moz+alexa+sr+maj+spam/#{Application.get_env(:scraper, :seo_rank_api_key)}/#{domain}", [], hackney: [pool: :first_pool]) do
       {:ok, %{status_code: 200, body: body}} ->
         case Poison.decode(body) do

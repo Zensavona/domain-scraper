@@ -40,13 +40,15 @@ defmodule Finisher do
 
   def find_unfound_domain_stats do
     IO.puts "[Finisher] Finding unfound domain stats"
-    domains = Repo.all(from d in Domain, where: d.status == true and is_nil(d.cf))
-    domains = domains |> Enum.map(fn(domain) ->
-      IO.puts "[Finisher] looking up stats for #{domain.domain}"
-      stats = Scraper.Core.lookup_stats(domain.domain) |> Enum.map(fn({k, v}) -> {String.to_atom(k), v} end) |> Enum.into(%{})
-      changeset = Domain.changeset(domain, stats)
-      Repo.update!(changeset)
-    end)
+    domains = Repo.all(from d in Domain, where: d.status == true and is_nil(d.cf), limit: 50)
+
+    domains
+      |> Enum.map(fn(domain) -> Task.async(fn ->
+        stats = Scraper.Core.lookup_stats(domain.domain) |> Enum.map(fn({k, v}) -> {String.to_atom(k), v} end) |> Enum.into(%{})
+        changeset = Domain.changeset(domain, stats)
+        Repo.update(changeset)
+      end) end)
+      |> Enum.map(&Task.await/1)
   end
 
   def handle_crawl_queue do
