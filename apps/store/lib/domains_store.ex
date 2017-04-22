@@ -1,6 +1,8 @@
 defmodule Store.Domains do
   @set_name "domains_to_check"
 
+  require DogStatsd
+
   def exists?(crawl_id, domain) do
     case Store.Redix.command(["SISMEMBER", "#{@set_name}:#{crawl_id}", domain]) do
       {:ok, 1} ->
@@ -17,11 +19,15 @@ defmodule Store.Domains do
       domain ->
         domain = domain |> String.trim
         if (!is_nil(domain) && String.length(domain) >= 4) do
-          case Store.DomainsChecked.exists?(crawl_id, domain) && Store.Domains.exists?(crawl_id, domain) do
-            false ->
-              Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", domain])
-            _ ->
-            IO.puts "[Domains] Found duplicate: #{domain}"
+          DogStatsd.time(:dogstatsd, "store.domains.write_time") do
+            case Store.DomainsChecked.exists?(crawl_id, domain) && Store.Domains.exists?(crawl_id, domain) do
+              false ->
+                Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", domain])
+                DogStatsd.increment(:dogstatsd, "store.domains.written")
+              _ ->
+                IO.puts "[Domains] Found duplicate: #{domain}"
+                DogStatsd.increment(:dogstatsd, "store.domains.duplicate")
+            end
           end
         end
     end

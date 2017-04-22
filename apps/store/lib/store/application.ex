@@ -3,6 +3,8 @@ defmodule Store.Application do
   # for more information on OTP Applications
   @moduledoc false
 
+  require DogStatsd
+
   use Application
 
   def start(_type, _args) do
@@ -13,6 +15,7 @@ defmodule Store.Application do
       # Starts a worker by calling: Store.Worker.start_link(arg1, arg2, arg3)
       # worker(Store.ToCrawl, [[]]),
       # worker(Store.Domains, [[]]),
+      worker(DogStatsd, [%{}, [name: :dogstatsd]])
     ]
 
     pool_size = 100

@@ -1,6 +1,8 @@
 defmodule Store.ToCrawl do
   @set_name "to_crawl"
 
+  require DogStatsd
+
   def exists?(crawl_id, url) do
     case Store.Redix.command(["SISMEMBER", "#{@set_name}:#{crawl_id}", "#{url}"]) do
       {:ok, 1} ->
@@ -14,18 +16,25 @@ defmodule Store.ToCrawl do
     urls = urls |> Enum.reject(&is_nil/1) |> Enum.map(&String.trim/1) |> Enum.filter(fn(u) -> String.length(u) >= 4 end)
 
     if length(urls) >= 1 do
-      commands = urls |> Enum.reject(&Store.Crawled.exists?(crawl_id, &1)) |> Enum.map(fn(url) -> ["SADD", "#{@set_name}:#{crawl_id}", url] end)
-      if (length(commands) > 0) do
-        Store.Redix.pipeline(commands)
+      DogStatsd.time(:dogstatsd, "store.to_crawl.write_time") do
+        commands = urls |> Enum.reject(&Store.Crawled.exists?(crawl_id, &1)) |> Enum.map(fn(url) -> ["SADD", "#{@set_name}:#{crawl_id}", url] end)
+        if (length(commands) > 0) do
+          Store.Redix.pipeline(commands)
+          DogStatsd.increment(:dogstatsd, "store.to_crawl.write")
+        end
       end
     end
   end
 
   def push(crawl_id, url) do
-    if !Store.Crawled.exists?(crawl_id, url) && !Store.ToCrawl.exists?(crawl_id, url) do
-      Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", url])
-    else
-      IO.puts "[ToCrawl] Found duplicate: #{url}"
+    DogStatsd.time(:dogstatsd, "store.to_crawl.write_time") do
+      if !Store.Crawled.exists?(crawl_id, url) && !Store.ToCrawl.exists?(crawl_id, url) do
+        Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", url])
+        DogStatsd.increment(:dogstatsd, "store.to_crawl.write")
+      else
+        IO.puts "[ToCrawl] Found duplicate: #{url}"
+        DogStatsd.increment(:dogstatsd, "store.to_crawl.duplicate")
+      end
     end
   end
 

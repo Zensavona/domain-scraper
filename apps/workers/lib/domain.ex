@@ -1,5 +1,6 @@
 defmodule Workers.Domain do
 
+  require DogStatsd
   alias Web.Repo
   alias Web.Domain
 
@@ -9,16 +10,24 @@ defmodule Workers.Domain do
         # IO.puts "[Domain] none found, waiting..."
         :timer.sleep(1000)
       {crawl_id, domain} ->
-        IO.puts "[Domains] found a domain to check: #{domain} (#{crawl_id})"
-        case Scraper.Core.check_domain(domain) do
-          {:error, nil} ->
-            insert(crawl_id, domain, false)
-          {:registered, nil} ->
-            # status = false, add to database
-            insert(crawl_id, domain, false)
-          {:available, meta} ->
-            # status = true, add to database
-            insert(crawl_id, domain, true, meta)
+        DogStatsd.time(:dogstatsd, "worker.domain.time") do
+          IO.puts "[Domains] found a domain to check: #{domain} (#{crawl_id})"
+          case Scraper.Core.check_domain(domain) do
+            {:error, nil} ->
+              insert(crawl_id, domain, false)
+              DogStatsd.increment(:dogstatsd, "worker.domain.checked")
+              DogStatsd.increment(:dogstatsd, "worker.domain.error")
+            {:registered, nil} ->
+              # status = false, add to database
+              insert(crawl_id, domain, false)
+              DogStatsd.increment(:dogstatsd, "worker.domain.checked")
+              DogStatsd.increment(:dogstatsd, "worker.domain.registered")
+            {:available, meta} ->
+              # status = true, add to database
+              insert(crawl_id, domain, true, meta)
+              DogStatsd.increment(:dogstatsd, "worker.domain.checked")
+              DogStatsd.increment(:dogstatsd, "worker.domain.available")
+          end
         end
     end
     worker()
