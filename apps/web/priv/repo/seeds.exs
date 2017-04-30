@@ -14,13 +14,41 @@ alias Web.Repo
 alias Web.User
 
 zen = User.registration_changeset(%User{}, %{email: "z@zen.id.au", first_name: "Zen", last_name: "Savona", password: "zenzenzen"})
-Repo.insert!(zen)
+case Repo.get_by(User, email: zen.changes.email) do
+  nil ->
+    Repo.insert(zen)
+  _ ->
+    :user_exists
+end
 
 kevin = User.registration_changeset(%User{}, %{email: "kevin@kevingraham.com", first_name: "Kevin", last_name: "Graham", password: "kevkevkev"})
-Repo.insert!(kevin)
+case Repo.get_by(User, email: kevin.changes.email) do
+  nil ->
+    Repo.insert(kevin)
+  _ ->
+    :user_exists
+end
 
 jesse = User.registration_changeset(%User{}, %{email: "jesse@jessehanley.com", first_name: "Jesse", last_name: "Hanley", password: "jessejesse"})
-Repo.insert!(jesse)
+case Repo.get_by(User, email: jesse.changes.email) do
+  nil ->
+    Repo.insert(jesse)
+  _ ->
+    :user_exists
+end
 
 matt = User.registration_changeset(%User{}, %{email: "matt", first_name: "Matt", last_name: "Eaton", password: "mattmattmatt"})
-Repo.insert!(matt)
+case Repo.get_by(User, email: matt.changes.email) do
+  nil ->
+    Repo.insert(matt)
+  _ ->
+    :user_exists
+end
+
+jason = User.registration_changeset(%User{}, %{email: "jason@the.domain.name", first_name: "Jason", last_name: "Duke", password: "Jason@JasonD"})
+case Repo.get_by(User, email: jason.changes.email) do
+  nil ->
+    Repo.insert(jason)
+  _ ->
+    :user_exists
+end
