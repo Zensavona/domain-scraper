@@ -76,11 +76,11 @@ defmodule Store.Crawled do
   end
 
   def list_length(crawl_id) do
-    case Store.Redix.command(["SMEMBERS", "#{@set_name}_#{crawl_id}"]) do
+    case Store.Redix.command(["SCARD", "#{@set_name}_#{crawl_id}"]) do
       {:ok, nil} ->
         0
       {:ok, members} ->
-         members |> length
+         members
     end
   end
 

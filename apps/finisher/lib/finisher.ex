@@ -23,7 +23,7 @@ defmodule Finisher do
       queued_actions = Store.ToCrawl.list_length(crawl.id) + Store.Domains.list_length(crawl.id)
 
       if (queued_actions == 0) do
-        crawled_urls = Store.Crawled.get_list(crawl.id) |> length
+        crawled_urls = Store.Crawled.list_length(crawl.id)
 
         time_to_end_at =
           Ecto.DateTime.utc
