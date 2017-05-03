@@ -84,7 +84,7 @@ defmodule Store.Crawled do
     end
   end
 
-  def get_list(crawl_id) do
+  defp get_list(crawl_id) do
     case Store.Redix.command(["SMEMBERS", "#{@set_name}_#{crawl_id}"]) do
       {:ok, nil} ->
         []

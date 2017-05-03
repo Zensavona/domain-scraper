@@ -3,8 +3,8 @@ defmodule Web.PageController do
   require IEx
 
   def index(conn, _params) do
-    crawled = [] # Scraper.Store.Crawled.get_list
-    domains = [] # Scraper.Store.Domains.get_list
+    crawled = []
+    domains = []
 
     render conn, "index.html", crawled: crawled, domains: domains
   end
