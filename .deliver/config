@@ -19,6 +19,10 @@ PRODUCTION_USER="root" # local user at deploy hosts
 
 DELIVER_TO="/home/elixir_deployer/$APP_staging" # deploy directory on production hosts
 
+BUILD_CMD=mix
+RELEASE_CMD=mix
+USING_DISTILLERY=true
+
 # For *Phoenix* projects, symlink prod.secret.exs to our tmp source
 # pre_erlang_get_and_update_deps() {
 #   local _prod_secret_path="/home/elixir_builder/prod.secret.exs"
@@ -37,4 +41,12 @@ pre_erlang_get_and_update_deps() {
     status "Copying '$_local_secret_config_file' file to build host"
     scp "$_local_secret_config_file" "$BUILD_USER@$BUILD_HOST:$BUILD_AT/apps/web/config/prod.secret.exs"
   fi
+
+  status "Running ecto.migrate" # log output prepended with "----->"
+  __sync_remote " # runs the commands on the build host
+    [ -f ~/.profile ] && source ~/.profile # load profile (optional)
+    cd '$BUILD_AT' # enter the build directory on the build host (required)
+    # run your custom task
+    MIX_ENV=prod $MIX_CMD ecto.migrate $SILENCE
+  "
 }
