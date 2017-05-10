@@ -18,7 +18,7 @@ defmodule Store.Application do
       worker(DogStatsd, [%{}, [name: :dogstatsd]])
     ]
 
-    pool_size = 100
+    pool_size = 500
     redix_workers = for i <- 0..(pool_size - 1) do
       worker(Redix, [[host: Application.get_env(:store, :redis_host), port: Application.get_env(:store, :redis_port)], [name: :"redix_#{i}"]], id: {Redix, i})
     end

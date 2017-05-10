@@ -41,7 +41,9 @@ pre_erlang_get_and_update_deps() {
     status "Copying '$_local_secret_config_file' file to build host"
     scp "$_local_secret_config_file" "$BUILD_USER@$BUILD_HOST:$BUILD_AT/apps/web/config/prod.secret.exs"
   fi
+}
 
+post_erlang_clean_compile() {
   status "Running ecto.migrate" # log output prepended with "----->"
   __sync_remote " # runs the commands on the build host
     [ -f ~/.profile ] && source ~/.profile # load profile (optional)
