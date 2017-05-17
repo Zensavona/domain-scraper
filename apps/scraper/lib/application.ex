@@ -9,7 +9,7 @@ defmodule Scraper.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      :hackney_pool.child_spec(:first_pool, [timeout: 15000, max_connections: Application.get_env(:umberlla, :hackney_max_connections)])
+      :hackney_pool.child_spec(:first_pool, [timeout: 15000, max_connections: 1500])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
