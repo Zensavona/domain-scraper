@@ -1,17 +1,17 @@
 defmodule Workers.Domain do
 
   require DogStatsd
+  require Logger
   alias Web.Repo
   alias Web.Domain
 
   def worker do
     case Scheduler.pop_domain do
       :empty ->
-        # IO.puts "[Domain] none found, waiting..."
         :timer.sleep(1000)
       {crawl_id, domain} ->
         DogStatsd.time(:dogstatsd, "worker.domain.time") do
-          IO.puts "[Domains] found a domain to check: #{domain} (#{crawl_id})"
+          Logger.info "[Domains] found a domain to check: #{domain} (#{crawl_id})"
           case Scraper.Core.check_domain(domain) do
             {:error, nil} ->
               insert(crawl_id, domain, false)
@@ -39,12 +39,12 @@ defmodule Workers.Domain do
       case Repo.insert(Domain.changeset(%Domain{}, data)) do
         {:ok, _} ->
           Store.DomainsChecked.push(crawl_id, domain)
-          IO.puts "[Domains] Inserted #{domain}"
+          Logger.info "[Domains] Inserted #{domain}"
         {:error, _} ->
-          IO.puts "[Domains] Error inserting #{domain}, probably a duplicate (Repo rejection)"
+          Logger.info "[Domains] Error inserting #{domain}, probably a duplicate (Repo rejection)"
       end
     else
-      IO.puts "[Domains] Error inserting #{domain}, probably a duplicate (Found in Store)"
+      Logger.info "[Domains] Error inserting #{domain}, probably a duplicate (Found in Store)"
     end
   end
 end

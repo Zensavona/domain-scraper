@@ -2,6 +2,7 @@ defmodule Store.ToCrawl do
   @set_name "to_crawl"
 
   require DogStatsd
+  require Logger
 
   def exists?(crawl_id, url) do
     case Store.Redix.command(["SISMEMBER", "#{@set_name}:#{crawl_id}", "#{url}"]) do
@@ -32,7 +33,7 @@ defmodule Store.ToCrawl do
         Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", url])
         DogStatsd.increment(:dogstatsd, "store.to_crawl.write")
       else
-        IO.puts "[ToCrawl] Found duplicate: #{url}"
+        Logger.info "[ToCrawl] Found duplicate: #{url}"
         DogStatsd.increment(:dogstatsd, "store.to_crawl.duplicate")
       end
     end

@@ -33,7 +33,7 @@ defmodule Scraper.Mixfile do
       {:floki, "~> 0.13.1"},
       {:httpoison, "~> 0.10.0"},
       {:whois, git: "https://github.com/Zensavona/whois.ex.git"},
-      {:domainatrex, "~> 1.0.2"}
+      {:domainatrex, "~> 2.0"}
     ]
   end
 end

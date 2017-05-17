@@ -7,6 +7,7 @@ defmodule Finisher do
   alias Web.Domain
   alias Web.User
   import Ecto.Query
+  require Logger
   @per_user_concurrency_limit
 
   def start do
@@ -16,7 +17,7 @@ defmodule Finisher do
   end
 
   def finish do
-    IO.puts "[Finisher] Finishing all the things"
+    Logger.info "[Finisher] Finishing all the things"
     # all unfinished crawls created more than 20 seconds ago
     crawls = Repo.all(from c in Crawl, where: is_nil(c.finished_at) and c.is_queued == false and c.began_at < datetime_add(^Ecto.DateTime.utc, -60, "second"))
     Enum.each(crawls, fn(crawl) ->
@@ -39,7 +40,7 @@ defmodule Finisher do
   end
 
   def find_unfound_domain_stats do
-    IO.puts "[Finisher] Finding unfound domain stats"
+    Logger.info "[Finisher] Finding unfound domain stats"
     domains = Repo.all(from d in Domain, where: d.status == true and is_nil(d.cf), limit: 50)
 
     domains
@@ -66,7 +67,7 @@ defmodule Finisher do
               c |> Crawl.changeset(%{is_queued: false}) |> Repo.update!
               Scraper.start_new_crawl(c.id, c.seed)
               Scheduler.add_crawl(c.id)
-              IO.puts "[Queue] Dequeued a crawl for user #{user.id}"
+              Logger.info "[Queue] Dequeued a crawl for user #{user.id}"
             end)
         _ ->
           :nothing

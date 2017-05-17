@@ -2,6 +2,7 @@ defmodule Store.Domains do
   @set_name "domains_to_check"
 
   require DogStatsd
+  require Logger
 
   def exists?(crawl_id, domain) do
     case Store.Redix.command(["SISMEMBER", "#{@set_name}:#{crawl_id}", domain]) do
@@ -15,7 +16,7 @@ defmodule Store.Domains do
   def push(crawl_id, domain) do
     case domain do
       nil ->
-         IO.puts "[Domains] Bad Domain: #{domain}"
+         Logger.info "[Domains] Bad Domain: #{domain}"
       domain ->
         domain = domain |> String.trim
         if (!is_nil(domain) && String.length(domain) >= 4) do
@@ -25,7 +26,7 @@ defmodule Store.Domains do
                 Store.Redix.command(["SADD", "#{@set_name}:#{crawl_id}", domain])
                 DogStatsd.increment(:dogstatsd, "store.domains.written")
               _ ->
-                IO.puts "[Domains] Found duplicate: #{domain}"
+                Logger.info "[Domains] Found duplicate: #{domain}"
                 DogStatsd.increment(:dogstatsd, "store.domains.duplicate")
             end
           end

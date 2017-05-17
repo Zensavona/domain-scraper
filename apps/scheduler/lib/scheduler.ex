@@ -2,6 +2,7 @@ defmodule Scheduler do
   @moduledoc """
   Documentation for Scheduler.
   """
+  require Logger
   @set_name "in_progress"
 
   @doc """
@@ -30,7 +31,7 @@ defmodule Scheduler do
       {:ok, nil} ->
          :empty
       {:error, :timeout} ->
-        IO.puts "[Scheduler] Redis timeout..."
+        Logger.info "[Scheduler] Redis timeout..."
         :empty
       {:ok, crawls} ->
         crawls_with_members = crawls
@@ -42,13 +43,13 @@ defmodule Scheduler do
           {crawl_id, _card} = Enum.random(crawls_with_members)
           case Store.Redix.command(["SPOP", "to_crawl:#{crawl_id}"]) do
             {:ok, nil} ->
-              IO.puts "[Scheduler] Popped Url, it was nil"
+              Logger.info "[Scheduler] Popped Url, it was nil"
               :empty
             {:ok, url} ->
-              IO.puts "[Scheduler] Popped Url #{url}"
+              Logger.info "[Scheduler] Popped Url #{url}"
               {crawl_id, url}
             {:error, :timeout} ->
-              IO.puts "[Scheduler] Redis timeout..."
+              Logger.info "[Scheduler] Redis timeout..."
               :empty
           end
         else
@@ -65,7 +66,7 @@ defmodule Scheduler do
       {:ok, nil} ->
          :empty
       {:error, :timeout} ->
-         IO.puts "[Scheduler] Redis timeout..."
+         Logger.info "[Scheduler] Redis timeout..."
          :empty
       {:ok, crawls} ->
         crawls_with_members = crawls
@@ -77,13 +78,13 @@ defmodule Scheduler do
           {crawl_id, _card} = Enum.random(crawls_with_members)
           case Store.Redix.command(["SPOP", "domains_to_check:#{crawl_id}"]) do
             {:ok, nil} ->
-              IO.puts "[Scheduler] Popped Domain, it was nil"
+              Logger.info "[Scheduler] Popped Domain, it was nil"
               :empty
             {:ok, domain} ->
-              IO.puts "[Scheduler] Popped Domain #{domain}"
+              Logger.info "[Scheduler] Popped Domain #{domain}"
               {crawl_id, domain}
             {:error, :timeout} ->
-              IO.puts "[Scheduler] Redis timeout..."
+              Logger.info "[Scheduler] Redis timeout..."
               :empty
           end
         else

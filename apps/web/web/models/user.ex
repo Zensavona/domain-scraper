@@ -31,7 +31,6 @@ defmodule Web.User do
     |> validate_required([:password])
     |> validate_length(:password, min: 6, max: 100)
     |> hash_password
-    |> IO.inspect
   end
 
   defp hash_password(changeset) do

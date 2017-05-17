@@ -1,15 +1,15 @@
 defmodule Workers.Url do
 
   require DogStatsd
+  require Logger
 
   def worker do
     case Scheduler.pop_url do
       :empty ->
-        # IO.puts "[Urls] none found, waiting..."
         :timer.sleep(1000)
       {crawl_id, url} ->
         DogStatsd.time(:dogstatsd, "worker.url.time") do
-          IO.puts "[Urls] found a url to crawl: #{url} (#{crawl_id})"
+          Logger.info "[Urls] found a url to crawl: #{url} (#{crawl_id})"
           case Scraper.Core.url_to_urls_and_domains(url) do
             {:error, url} ->
               Store.Crawled.push(crawl_id, url)
@@ -22,7 +22,7 @@ defmodule Workers.Url do
               DogStatsd.increment(:dogstatsd, "worker.url.checked")
               DogStatsd.increment(:dogstatsd, "worker.url.normal")
             other ->
-              IO.puts "[Url] Something fucked up... (#{other})"
+              Logger.info "[Url] Something fucked up... (#{other})"
               DogStatsd.increment(:dogstatsd, "worker.url.checked")
               DogStatsd.increment(:dogstatsd, "worker.url.unknown")
           end

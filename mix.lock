@@ -12,7 +12,7 @@
   "decimal": {:hex, :decimal, "1.3.1", "157b3cedb2bfcb5359372a7766dd7a41091ad34578296e951f58a946fcab49c6", [:mix], []},
   "distillery": {:hex, :distillery, "0.10.1", "14fccade4b8ab849b99e21c4bdfaa1092dbacdce8afd33f5c369c6e114385b0e", [:mix], []},
   "dogstatsd": {:hex, :dogstatsd, "0.0.3", "aa76cec99f813c11f2d4901e7db3390b9ec12e5a7618489a57b22834ca3268eb", [:mix], []},
-  "domainatrex": {:hex, :domainatrex, "1.0.2", "5db60c91f9c293071fa88a5769afce3d6d542f701768829bfe184fc0193d4ad5", [:mix], []},
+  "domainatrex": {:hex, :domainatrex, "2.0.0", "d9cc451d821b891ffe2392d95eed3a4088b75d17fe1d7c5602ed8d98db6c931d", [:mix], []},
   "ecto": {:hex, :ecto, "2.1.3", "ffb24e150b519a4c0e4c84f9eabc8587199389bc499195d5d1a93cd3b2d9a045", [:mix], [{:db_connection, "~> 1.1", [hex: :db_connection, optional: true]}, {:decimal, "~> 1.2", [hex: :decimal, optional: false]}, {:mariaex, "~> 0.8.0", [hex: :mariaex, optional: true]}, {:poison, "~> 2.2 or ~> 3.0", [hex: :poison, optional: true]}, {:poolboy, "~> 1.5", [hex: :poolboy, optional: false]}, {:postgrex, "~> 0.13.0", [hex: :postgrex, optional: true]}, {:sbroker, "~> 1.0", [hex: :sbroker, optional: true]}]},
   "edeliver": {:hex, :edeliver, "1.4.2", "8c9428ed5616a9b9530c2860bdbc9b813c9ddcc6f9e5d99b85288abfd7d5df40", [:mix], [{:distillery, ">= 0.8.0", [hex: :distillery, optional: true]}, {:exrm, ">= 0.16.0", [hex: :exrm, optional: true]}]},
   "elixir_make": {:hex, :elixir_make, "0.4.0", "992f38fabe705bb45821a728f20914c554b276838433349d4f2341f7a687cddf", [:mix], []},
