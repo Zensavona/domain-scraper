@@ -22,3 +22,5 @@ erl_crash.dump
 
 # Redis dump
 dump.rdb
+creds
+.elixir_ls/

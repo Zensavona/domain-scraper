@@ -10,6 +10,8 @@ To run it for the first time:
 - go to `apps/web` and run `mix ecto.setup`
 - go back to `/` and run `iex -S mix phoenix.server` (this is all you need to run in future)
 
+For a bit more info, see `slides.pdf` - I gave a talk about this at the Melbourne Elixir meetup.
+
 ## Finisher
 
 `Finisher` is responsible for finishing things up.
