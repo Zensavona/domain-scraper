@@ -12,6 +12,8 @@ To run it for the first time:
 
 For a bit more info, see `slides.pdf` - I gave a talk about this at the Melbourne Elixir meetup.
 
+Also, know that this is not ready to go deploy to the public internet, since there are Erlang cookies and secret key bases committed to the codebase. This is just something I built for the lols.
+
 ## Finisher
 
 `Finisher` is responsible for finishing things up.
